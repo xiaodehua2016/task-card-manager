@@ -580,8 +580,32 @@ document.addEventListener('visibilitychange', function() {
 });
 
 // 页面卸载时清理同步回调
+// 页面卸载时清理同步回调
 window.addEventListener('beforeunload', function() {
     if (window.taskManager && window.taskManager.syncCallback) {
         window.taskManager.storage.offSync(window.taskManager.syncCallback);
+    }
+});
+
+// 全局刷新函数 - 供跨浏览器同步使用
+window.refreshDisplay = function() {
+    if (window.taskManager) {
+        console.log('🔄 执行全局页面刷新');
+        window.taskManager.refreshAllData();
+    }
+};
+
+window.refreshMainPage = function() {
+    if (window.taskManager) {
+        console.log('🔄 执行主页面刷新');
+        window.taskManager.refreshAllData();
+    }
+};
+
+// 监听数据刷新事件
+window.addEventListener('dataRefreshRequired', function() {
+    console.log('🔄 收到数据刷新要求');
+    if (window.taskManager) {
+        window.taskManager.refreshAllData();
     }
 });

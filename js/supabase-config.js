@@ -188,6 +188,7 @@ class SupabaseConfig {
     }
 
     // 监听实时数据变化
+    // 监听实时数据变化
     subscribeToChanges(callback) {
         if (!this.supabase || !this.currentUser) {
             console.warn('无法订阅数据变化：Supabase未初始化');
@@ -201,13 +202,101 @@ class SupabaseConfig {
                 schema: 'public',
                 table: 'task_data',
                 filter: `user_id=eq.${this.currentUser.id}`
-            }, (payload) => {
-                console.log('收到实时数据变化:', payload);
-                if (callback) callback(payload);
+            }, async (payload) => {
+                console.log('🔄 收到实时数据变化:', payload);
+                
+                // 处理数据更新
+                if (payload.eventType === 'UPDATE' || payload.eventType === 'INSERT') {
+                    const newData = payload.new?.data;
+                    if (newData && callback) {
+                        console.log('📥 应用远程数据更新');
+                        callback(newData);
+                        
+                        // 显示同步提示
+                        this.showSyncNotification('数据已从其他设备同步');
+                    }
+                }
             })
-            .subscribe();
+            .subscribe((status) => {
+                console.log('📡 实时订阅状态:', status);
+            });
 
         return subscription;
+    }
+
+    // 显示同步通知
+    showSyncNotification(message) {
+        // 创建或更新通知元素
+        let notification = document.getElementById('sync-notification');
+        if (!notification) {
+            notification = document.createElement('div');
+            notification.id = 'sync-notification';
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #4CAF50;
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 10000;
+                font-size: 14px;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+            document.body.appendChild(notification);
+        }
+
+        notification.textContent = message;
+        notification.style.transform = 'translateX(0)';
+
+        // 3秒后隐藏
+        setTimeout(() => {
+            notification.style.transform = 'translateX(100%)';
+        }, 3000);
+    }
+
+    // 强制同步数据
+    async forceSyncData() {
+        if (!this.isConfigured || !this.supabase || !this.currentUser) {
+            console.warn('无法强制同步：Supabase未配置');
+            return false;
+        }
+
+        try {
+            console.log('🔄 开始强制同步数据...');
+            
+            // 下载最新数据
+            const cloudData = await this.downloadData();
+            if (cloudData && window.taskStorage) {
+                // 比较时间戳，使用最新的数据
+                const localData = window.taskStorage.getAllData();
+                const cloudTime = cloudData.lastUpdateTime || 0;
+                const localTime = localData.lastUpdateTime || 0;
+                
+                if (cloudTime > localTime) {
+                    console.log('📥 应用云端数据（更新）');
+                    window.taskStorage.loadFromData(cloudData);
+                    this.showSyncNotification('已同步最新数据');
+                    
+                    // 刷新页面显示
+                    if (typeof window.refreshDisplay === 'function') {
+                        window.refreshDisplay();
+                    }
+                    return true;
+                } else {
+                    console.log('📤 本地数据更新，上传到云端');
+                    await this.uploadData(localData);
+                    return true;
+                }
+            }
+            
+            return false;
+        } catch (error) {
+            console.error('强制同步失败:', error);
+            return false;
+        }
     }
 
     // 检查网络连接状态

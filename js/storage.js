@@ -41,16 +41,28 @@ class TaskStorage {
     }
 
     // 处理云端数据变化
-    handleCloudDataChange(payload) {
-        if (payload.eventType === 'UPDATE' || payload.eventType === 'INSERT') {
-            const cloudData = payload.new.data;
-            const localData = this.getData();
+    // 处理云端数据变化
+    handleCloudDataChange(cloudData) {
+        if (!cloudData) return;
+        
+        const localData = this.getData();
+        
+        // 避免循环同步 - 检查是否是自己的更新
+        if (cloudData.lastModifiedBy === this.getClientId()) {
+            console.log('跳过自己的更新');
+            return;
+        }
+        
+        // 避免循环同步 - 检查时间戳
+        if (cloudData.lastUpdateTime > (localData.lastUpdateTime || 0)) {
+            console.log('🔄 检测到云端数据更新，正在同步到本地...');
+            this.mergeCloudData(cloudData);
             
-            // 避免循环同步
-            if (cloudData.lastUpdateTime > (localData.lastUpdateTime || 0)) {
-                console.log('检测到云端数据更新，正在同步到本地...');
-                this.mergeCloudData(cloudData);
-            }
+            // 显示同步通知
+            this.showSyncNotification('数据已从其他设备同步');
+            
+            // 刷新页面显示
+            this.refreshPageDisplay();
         }
     }
 
@@ -122,11 +134,64 @@ class TaskStorage {
     }
 
     // 显示同步状态
+    // 显示同步状态
     showSyncStatus(type, message) {
         const event = new CustomEvent('syncStatusUpdate', {
             detail: { type, message }
         });
         window.dispatchEvent(event);
+    }
+
+    // 显示同步通知
+    showSyncNotification(message) {
+        // 创建或更新通知元素
+        let notification = document.getElementById('sync-notification');
+        if (!notification) {
+            notification = document.createElement('div');
+            notification.id = 'sync-notification';
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #4CAF50;
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 10000;
+                font-size: 14px;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+            document.body.appendChild(notification);
+        }
+
+        notification.textContent = message;
+        notification.style.transform = 'translateX(0)';
+
+        // 3秒后隐藏
+        setTimeout(() => {
+            notification.style.transform = 'translateX(100%)';
+        }, 3000);
+    }
+
+    // 刷新页面显示
+    refreshPageDisplay() {
+        // 触发页面刷新事件
+        window.dispatchEvent(new CustomEvent('dataRefreshRequired'));
+        
+        // 如果存在全局刷新函数，调用它
+        if (typeof window.refreshDisplay === 'function') {
+            window.refreshDisplay();
+        }
+        
+        // 如果存在主页面刷新函数，调用它
+        if (typeof window.refreshMainPage === 'function') {
+            window.refreshMainPage();
+        }
+        
+        // 通知所有同步回调
+        this.notifySyncCallbacks();
     }
 
     // 设置存储同步监听
