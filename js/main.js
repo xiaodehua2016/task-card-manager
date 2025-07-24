@@ -461,17 +461,7 @@ class TaskManager {
 }
 
 // 全局函数
-// 打开编辑任务页面
-function openEditTasks() {
-    window.location.href = 'edit-tasks.html';
-}
-
-// 打开今日任务管理页面
-function openTodayTasksManager() {
-    window.location.href = 'today-tasks.html';
-}
-
-// 页面跳转函数
+// 全局函数 - 页面跳转
 function openFocusChallenge() {
     window.location.href = 'focus-challenge.html';
 }

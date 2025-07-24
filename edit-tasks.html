@@ -1,1 +1,186 @@
->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编辑任务 - 任务卡片管理</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/edit.css">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+    <div class="container">
+        <!-- 页面头部 -->
+        <div class="header">
+            <button class="back-btn" onclick="goBack()">
+                <span class="icon">←</span>
+                <span>返回</span>
+            </button>
+            <h1>✏️ 编辑任务</h1>
+            <p>管理你的任务模板和配置</p>
+        </div>
+
+        <!-- 统计信息卡片 -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📋</div>
+                <div class="stat-content">
+                    <div class="stat-number" id="totalTasks">0</div>
+                    <div class="stat-label">总任务数</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📅</div>
+                <div class="stat-content">
+                    <div class="stat-number" id="dailyTasks">0</div>
+                    <div class="stat-label">每日任务</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⚡</div>
+                <div class="stat-content">
+                    <div class="stat-number" id="activeTasks">0</div>
+                    <div class="stat-label">活跃任务</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 操作按钮组 -->
+        <div class="action-buttons">
+            <button class="btn btn-primary" onclick="showAddTaskModal()">
+                <span class="btn-icon">➕</span>
+                <span class="btn-text">添加新任务</span>
+            </button>
+            <button class="btn btn-secondary" onclick="importTasks()">
+                <span class="btn-icon">📥</span>
+                <span class="btn-text">导入任务</span>
+            </button>
+            <button class="btn btn-secondary" onclick="exportTasks()">
+                <span class="btn-icon">📤</span>
+                <span class="btn-text">导出任务</span>
+            </button>
+            <button class="btn btn-danger" onclick="resetAllTasks()">
+                <span class="btn-icon">🔄</span>
+                <span class="btn-text">重置所有</span>
+            </button>
+        </div>
+
+        <!-- 任务列表区域 -->
+        <div class="tasks-section">
+            <div class="section-header">
+                <h2>📝 任务列表</h2>
+                <div class="filter-tabs">
+                    <button class="filter-tab active" data-filter="all">全部</button>
+                    <button class="filter-tab" data-filter="daily">每日</button>
+                    <button class="filter-tab" data-filter="oneTime">一次性</button>
+                    <button class="filter-tab" data-filter="routine">例行</button>
+                </div>
+            </div>
+            <div id="tasksContainer" class="tasks-list">
+                <!-- 任务列表将在这里动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加任务模态框 -->
+    <div id="addTaskModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>➕ 添加新任务</h3>
+                <button class="close-btn" onclick="hideAddTaskModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="taskName">任务名称</label>
+                    <input type="text" id="taskName" placeholder="请输入任务名称" maxlength="50">
+                </div>
+                
+                <div class="form-group">
+                    <label for="taskType">任务类型</label>
+                    <select id="taskType">
+                        <option value="daily">每日任务</option>
+                        <option value="oneTime">一次性任务</option>
+                        <option value="routine">例行任务</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="taskDescription">任务描述</label>
+                    <textarea id="taskDescription" placeholder="请输入任务描述（可选）" rows="3"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>选择图标</label>
+                    <div class="icon-selector">
+                        <button type="button" class="icon-option selected" data-icon="📚">📚</button>
+                        <button type="button" class="icon-option" data-icon="✏️">✏️</button>
+                        <button type="button" class="icon-option" data-icon="🎯">🎯</button>
+                        <button type="button" class="icon-option" data-icon="💪">💪</button>
+                        <button type="button" class="icon-option" data-icon="🎨">🎨</button>
+                        <button type="button" class="icon-option" data-icon="🎵">🎵</button>
+                        <button type="button" class="icon-option" data-icon="⚽">⚽</button>
+                        <button type="button" class="icon-option" data-icon="🍎">🍎</button>
+                    </div>
+                    <input type="hidden" id="taskIcon" value="📚">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="hideAddTaskModal()">取消</button>
+                <button class="btn btn-primary" onclick="addNewTask()">添加任务</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑任务模态框 -->
+    <div id="editTaskModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>✏️ 编辑任务</h3>
+                <button class="close-btn" onclick="hideEditTaskModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="editTaskName">任务名称</label>
+                    <input type="text" id="editTaskName" placeholder="请输入任务名称" maxlength="50">
+                </div>
+                
+                <div class="form-group">
+                    <label for="editTaskType">任务类型</label>
+                    <select id="editTaskType">
+                        <option value="daily">每日任务</option>
+                        <option value="oneTime">一次性任务</option>
+                        <option value="routine">例行任务</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editTaskDescription">任务描述</label>
+                    <textarea id="editTaskDescription" placeholder="请输入任务描述（可选）" rows="3"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>选择图标</label>
+                    <div class="icon-selector">
+                        <button type="button" class="icon-option" data-icon="📚">📚</button>
+                        <button type="button" class="icon-option" data-icon="✏️">✏️</button>
+                        <button type="button" class="icon-option" data-icon="🎯">🎯</button>
+                        <button type="button" class="icon-option" data-icon="💪">💪</button>
+                        <button type="button" class="icon-option" data-icon="🎨">🎨</button>
+                        <button type="button" class="icon-option" data-icon="🎵">🎵</button>
+                        <button type="button" class="icon-option" data-icon="⚽">⚽</button>
+                        <button type="button" class="icon-option" data-icon="🍎">🍎</button>
+                    </div>
+                    <input type="hidden" id="editTaskIcon" value="📚">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="hideEditTaskModal()">取消</button>
+                <button class="btn btn-primary" onclick="saveEditTask()">保存修改</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/storage.js"></script>
+    <script src="js/edit.js"></script>
+</body>
+</html>

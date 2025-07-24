@@ -3,48 +3,59 @@ class TaskEditor {
     constructor() {
         this.storage = window.taskStorage;
         this.draggedElement = null;
+        this.currentEditIndex = null;
         this.init();
     }
 
     // 初始化
     init() {
+        this.initializeDefaultTasks();
         this.loadUsername();
         this.renderTasksList();
-        this.renderTodayTasks();
+        this.updateStats();
         this.setupEventListeners();
-        this.initDateInputs();
     }
 
-    // 初始化日期输入框
-    initDateInputs() {
-        const today = new Date().toISOString().split('T')[0];
-        const dueDateInput = document.getElementById('due-date');
-        const startDateInput = document.getElementById('start-date');
-        
-        if (dueDateInput) {
-            dueDateInput.min = today;
-            dueDateInput.value = today;
-        }
-        
-        if (startDateInput) {
-            startDateInput.value = today;
+    // 初始化默认任务
+    initializeDefaultTasks() {
+        const tasks = this.storage.getTasks();
+        if (tasks.length === 0) {
+            const defaultTasks = [
+                '学而思数感小超市',
+                '斑马思维',
+                '核桃编程（学生端）',
+                '英语阅读',
+                '硬笔写字（30分钟）',
+                '悦乐达打卡/作业',
+                '暑假生活作业',
+                '体育/运动（迪卡侬）'
+            ];
+            
+            this.storage.setTasks(defaultTasks);
+            this.storage.updateDailyTemplate(defaultTasks);
+            // 初始化今日任务完成状态
+            const completion = new Array(defaultTasks.length).fill(false);
+            this.storage.setTodayCompletion(completion);
         }
     }
 
     // 设置事件监听器
     setupEventListeners() {
-        // 任务输入框回车事件
-        const taskInput = document.getElementById('new-task-input');
-        if (taskInput) {
-            taskInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    this.confirmAddTask();
-                } else if (e.key === 'Escape') {
-                    this.cancelAddTask();
-                }
-            });
-        }
+        // 模态框点击外部关闭
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                this.hideAddTaskModal();
+                this.hideEditTaskModal();
+            }
+        });
+
+        // 键盘事件
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                this.hideAddTaskModal();
+                this.hideEditTaskModal();
+            }
+        });
     }
 
     // 加载用户名
@@ -57,15 +68,17 @@ class TaskEditor {
 
     // 渲染任务列表
     renderTasksList() {
-        const tasksList = document.getElementById('tasks-list');
+        const tasksList = document.getElementById('tasksContainer');
         if (!tasksList) return;
 
         const tasks = this.storage.getTasks();
+        this.updateStats(); // 更新统计信息
         
         if (tasks.length === 0) {
             tasksList.innerHTML = `
                 <div class="empty-state">
-                    <p>还没有任务，点击"添加任务"开始创建吧！</p>
+                    <div class="empty-icon">📝</div>
+                    <p>还没有任务，点击"添加新任务"开始创建吧！</p>
                 </div>
             `;
             return;
@@ -92,52 +105,21 @@ class TaskEditor {
         this.addDragEvents();
     }
 
-    // 渲染今日任务列表
-    renderTodayTasks() {
-        const todayTasksList = document.getElementById('today-tasks-list');
-        if (!todayTasksList) return;
-
-        const todayTasks = this.storage.getTodayTasks();
+    // 更新统计信息
+    updateStats() {
+        const tasks = this.storage.getTasks();
         
-        if (todayTasks.length === 0) {
-            todayTasksList.innerHTML = `
-                <div class="empty-state">
-                    <p>今日没有任务</p>
-                </div>
-            `;
-            return;
-        }
-
-        todayTasksList.innerHTML = todayTasks.map((task, index) => `
-            <div class="today-task-item ${task.enabled ? '' : 'disabled'}">
-                <div class="today-task-info">
-                    <span class="task-type-badge ${task.type}">${this.getTaskTypeLabel(task.type)}</span>
-                    <span class="task-name">${task.name}</span>
-                    ${task.dueDate ? `<small>截止：${task.dueDate}</small>` : ''}
-                </div>
-                <div class="today-task-actions">
-                    <button class="toggle-btn ${task.enabled ? '' : 'disabled'}" 
-                            onclick="taskEditor.toggleTodayTask('${task.id}')">
-                        ${task.enabled ? '禁用' : '启用'}
-                    </button>
-                    ${task.type !== 'daily' ? `
-                        <button class="remove-btn" onclick="taskEditor.removeTodayTask('${task.id}')">
-                            删除
-                        </button>
-                    ` : ''}
-                </div>
-            </div>
-        `).join('');
-    }
-
-    // 获取任务类型标签
-    getTaskTypeLabel(type) {
-        const labels = {
-            daily: '每日',
-            oneTime: '一次性',
-            routine: '例行'
-        };
-        return labels[type] || type;
+        // 更新总任务数
+        const totalTasksEl = document.getElementById('totalTasks');
+        if (totalTasksEl) totalTasksEl.textContent = tasks.length;
+        
+        // 更新每日任务数（这里简化为总任务数，因为大部分是每日任务）
+        const dailyTasksEl = document.getElementById('dailyTasks');
+        if (dailyTasksEl) dailyTasksEl.textContent = tasks.length;
+        
+        // 更新活跃任务数
+        const activeTasksEl = document.getElementById('activeTasks');
+        if (activeTasksEl) activeTasksEl.textContent = tasks.length;
     }
 
     // 添加拖拽事件
@@ -214,6 +196,7 @@ class TaskEditor {
         
         // 保存更新
         this.storage.setTasks(tasks);
+        this.storage.updateDailyTemplate(tasks);
         data.completionHistory = history;
         this.storage.saveData(data);
         
@@ -222,228 +205,102 @@ class TaskEditor {
         this.showToast('任务顺序已更新！', 'success');
     }
 
-    // 任务类型改变事件
-    onTaskTypeChange() {
-        const taskType = document.getElementById('task-type-select').value;
-        const onetimeConfig = document.getElementById('onetime-config');
-        const routineConfig = document.getElementById('routine-config');
+    // 编辑任务
+    editTask(index) {
+        this.currentEditIndex = index;
+        const tasks = this.storage.getTasks();
+        const taskName = tasks[index];
         
-        // 隐藏所有配置
-        if (onetimeConfig) onetimeConfig.style.display = 'none';
-        if (routineConfig) routineConfig.style.display = 'none';
+        // 解析任务名称和图标
+        const iconMatch = taskName.match(/^(\S+)\s+(.+)$/);
+        const icon = iconMatch ? iconMatch[1] : '📚';
+        const name = iconMatch ? iconMatch[2] : taskName;
         
-        // 显示对应配置
-        if (taskType === 'oneTime' && onetimeConfig) {
-            onetimeConfig.style.display = 'block';
-        } else if (taskType === 'routine' && routineConfig) {
-            routineConfig.style.display = 'block';
-        }
+        // 填充编辑表单
+        document.getElementById('editTaskName').value = name;
+        document.getElementById('editTaskIcon').value = icon;
+        
+        // 更新图标选择器
+        document.querySelectorAll('#editTaskModal .icon-option').forEach(btn => {
+            btn.classList.remove('selected');
+            if (btn.getAttribute('data-icon') === icon) {
+                btn.classList.add('selected');
+            }
+        });
+        
+        // 显示编辑模态框
+        this.showEditTaskModal();
     }
 
-    // 频率改变事件
-    onFrequencyChange() {
-        const frequency = document.getElementById('frequency-select').value;
-        const weeklyConfig = document.getElementById('weekly-config');
-        const monthlyConfig = document.getElementById('monthly-config');
-        const intervalConfig = document.getElementById('interval-config');
-        
-        // 隐藏所有配置
-        if (weeklyConfig) weeklyConfig.style.display = 'none';
-        if (monthlyConfig) monthlyConfig.style.display = 'none';
-        if (intervalConfig) intervalConfig.style.display = 'none';
-        
-        // 显示对应配置
-        if (frequency === 'weekly' && weeklyConfig) {
-            weeklyConfig.style.display = 'block';
-        } else if (frequency === 'monthly' && monthlyConfig) {
-            monthlyConfig.style.display = 'block';
-        } else if (frequency === 'interval' && intervalConfig) {
-            intervalConfig.style.display = 'block';
-        }
-    }
-
-    // 显示添加任务表单
-    showAddTaskForm() {
-        const form = document.getElementById('add-task-form');
-        if (form) {
-            form.style.display = 'block';
-            const input = document.getElementById('new-task-input');
+    // 显示编辑任务模态框
+    showEditTaskModal() {
+        const modal = document.getElementById('editTaskModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            const input = document.getElementById('editTaskName');
             if (input) input.focus();
         }
     }
 
-    // 隐藏添加任务表单
-    hideAddTaskForm() {
-        const form = document.getElementById('add-task-form');
-        if (form) {
-            form.style.display = 'none';
-            this.clearAddTaskForm();
+    // 隐藏编辑任务模态框
+    hideEditTaskModal() {
+        const modal = document.getElementById('editTaskModal');
+        if (modal) {
+            modal.style.display = 'none';
+            this.clearEditTaskForm();
         }
     }
 
-    // 清空添加任务表单
-    clearAddTaskForm() {
-        const elements = {
-            'new-task-input': '',
-            'task-type-select': 'daily',
-            'due-date': new Date().toISOString().split('T')[0],
-            'task-description': '',
-            'frequency-select': 'weekly',
-            'month-days': '',
-            'interval-days': '',
-            'start-date': new Date().toISOString().split('T')[0],
-            'routine-description': ''
-        };
-        
-        Object.keys(elements).forEach(id => {
+    // 清空编辑任务表单
+    clearEditTaskForm() {
+        const elements = ['editTaskName', 'editTaskType', 'editTaskDescription', 'editTaskIcon'];
+        elements.forEach(id => {
             const element = document.getElementById(id);
-            if (element) element.value = elements[id];
+            if (element) {
+                if (id === 'editTaskType') {
+                    element.value = 'daily';
+                } else if (id === 'editTaskIcon') {
+                    element.value = '📚';
+                } else {
+                    element.value = '';
+                }
+            }
         });
-        
-        // 清空周选择
-        document.querySelectorAll('.weekdays-selector input[type="checkbox"]').forEach(cb => {
-            cb.checked = false;
+
+        // 重置图标选择
+        document.querySelectorAll('#editTaskModal .icon-option').forEach(btn => {
+            btn.classList.remove('selected');
         });
-        
-        // 重置配置显示
-        this.onTaskTypeChange();
+        document.querySelector('#editTaskModal .icon-option[data-icon="📚"]')?.classList.add('selected');
     }
 
-    // 确认添加任务
-    confirmAddTask() {
-        const taskNameInput = document.getElementById('new-task-input');
-        const taskTypeSelect = document.getElementById('task-type-select');
-        
-        if (!taskNameInput || !taskTypeSelect) return;
-        
-        const taskName = taskNameInput.value.trim();
-        const taskType = taskTypeSelect.value;
-        
+    // 保存编辑的任务
+    saveEditTask() {
+        const taskName = document.getElementById('editTaskName')?.value.trim();
+        const taskIcon = document.getElementById('editTaskIcon')?.value || '📚';
+
         if (!taskName) {
             this.showToast('请输入任务名称', 'error');
             return;
         }
 
+        if (this.currentEditIndex === null) {
+            this.showToast('编辑任务失败', 'error');
+            return;
+        }
+
         try {
-            if (taskType === 'daily') {
-                this.addDailyTask(taskName);
-            } else if (taskType === 'oneTime') {
-                this.addOneTimeTask(taskName);
-            } else if (taskType === 'routine') {
-                this.addRoutineTask(taskName);
-            }
-            
-            this.hideAddTaskForm();
-            this.renderTasksList();
-            this.renderTodayTasks();
-            this.showToast('任务添加成功！', 'success');
-        } catch (error) {
-            this.showToast('添加任务失败：' + error.message, 'error');
-        }
-    }
-
-    // 添加每日任务
-    addDailyTask(taskName) {
-        const tasks = this.storage.getTasks();
-        tasks.push(taskName);
-        this.storage.setTasks(tasks);
-        
-        // 更新每日任务模板
-        this.storage.updateDailyTemplate(tasks);
-    }
-
-    // 添加一次性任务
-    addOneTimeTask(taskName) {
-        const dueDateInput = document.getElementById('due-date');
-        const descriptionInput = document.getElementById('task-description');
-        
-        const dueDate = dueDateInput ? dueDateInput.value : '';
-        const description = descriptionInput ? descriptionInput.value.trim() : '';
-        
-        if (!dueDate) {
-            throw new Error('请选择截止日期');
-        }
-        
-        this.storage.addOneTimeTask(taskName, dueDate, description);
-    }
-
-    // 添加例行任务
-    addRoutineTask(taskName) {
-        const frequencySelect = document.getElementById('frequency-select');
-        const descriptionInput = document.getElementById('routine-description');
-        
-        if (!frequencySelect) {
-            throw new Error('请选择执行频率');
-        }
-        
-        const frequency = frequencySelect.value;
-        const description = descriptionInput ? descriptionInput.value.trim() : '';
-        
-        let config = {};
-        
-        if (frequency === 'weekly') {
-            const weekdays = Array.from(document.querySelectorAll('.weekdays-selector input[type="checkbox"]:checked'))
-                .map(cb => parseInt(cb.value));
-            
-            if (weekdays.length === 0) {
-                throw new Error('请选择执行日期');
-            }
-            
-            config.weekdays = weekdays;
-        } else if (frequency === 'monthly') {
-            const monthDaysInput = document.getElementById('month-days');
-            const monthDaysStr = monthDaysInput ? monthDaysInput.value.trim() : '';
-            
-            if (!monthDaysStr) {
-                throw new Error('请输入执行日期');
-            }
-            
-            const monthDays = monthDaysStr.split(',').map(d => parseInt(d.trim())).filter(d => d >= 1 && d <= 31);
-            if (monthDays.length === 0) {
-                throw new Error('请输入有效的日期（1-31）');
-            }
-            
-            config.monthDays = monthDays;
-        } else if (frequency === 'interval') {
-            const intervalDaysInput = document.getElementById('interval-days');
-            const startDateInput = document.getElementById('start-date');
-            
-            const intervalDays = intervalDaysInput ? parseInt(intervalDaysInput.value) : 0;
-            const startDate = startDateInput ? startDateInput.value : '';
-            
-            if (!intervalDays || intervalDays < 1) {
-                throw new Error('请输入有效的间隔天数');
-            }
-            
-            if (!startDate) {
-                throw new Error('请选择开始日期');
-            }
-            
-            config.intervalDays = intervalDays;
-            config.startDate = startDate;
-        }
-        
-        this.storage.addRoutineTask(taskName, frequency, config, description);
-    }
-
-    // 取消添加任务
-    cancelAddTask() {
-        this.hideAddTaskForm();
-    }
-
-    // 编辑任务
-    editTask(index) {
-        const tasks = this.storage.getTasks();
-        const currentName = tasks[index];
-        const newName = prompt('编辑任务名称:', currentName);
-        
-        if (newName && newName.trim() && newName.trim() !== currentName) {
-            tasks[index] = newName.trim();
+            const tasks = this.storage.getTasks();
+            const newTaskName = `${taskIcon} ${taskName}`;
+            tasks[this.currentEditIndex] = newTaskName;
             this.storage.setTasks(tasks);
             this.storage.updateDailyTemplate(tasks);
+            
+            this.hideEditTaskModal();
             this.renderTasksList();
-            this.renderTodayTasks();
             this.showToast('任务已更新！', 'success');
+        } catch (error) {
+            this.showToast('更新任务失败：' + error.message, 'error');
         }
     }
 
@@ -465,70 +322,125 @@ class TaskEditor {
                 }
             });
             
-            // 删除对应的时间记录
-            Object.keys(data.taskTimes || {}).forEach(date => {
-                if (data.taskTimes[date] && data.taskTimes[date][index] !== undefined) {
-                    delete data.taskTimes[date][index];
-                    // 重新索引
-                    const newTimes = {};
-                    Object.keys(data.taskTimes[date]).forEach(oldIndex => {
-                        const idx = parseInt(oldIndex);
-                        if (idx > index) {
-                            newTimes[idx - 1] = data.taskTimes[date][oldIndex];
-                        } else if (idx < index) {
-                            newTimes[idx] = data.taskTimes[date][oldIndex];
-                        }
-                    });
-                    data.taskTimes[date] = newTimes;
-                }
-            });
-            
-            // 删除对应的执行记录
-            Object.keys(data.taskExecutions || {}).forEach(date => {
-                if (data.taskExecutions[date] && data.taskExecutions[date][index] !== undefined) {
-                    delete data.taskExecutions[date][index];
-                    // 重新索引
-                    const newExecutions = {};
-                    Object.keys(data.taskExecutions[date]).forEach(oldIndex => {
-                        const idx = parseInt(oldIndex);
-                        if (idx > index) {
-                            newExecutions[idx - 1] = data.taskExecutions[date][oldIndex];
-                        } else if (idx < index) {
-                            newExecutions[idx] = data.taskExecutions[date][oldIndex];
-                        }
-                    });
-                    data.taskExecutions[date] = newExecutions;
-                }
-            });
-            
             this.storage.saveData(data);
             this.renderTasksList();
-            this.renderTodayTasks();
             this.showToast('任务已删除！', 'success');
         }
     }
 
-    // 切换今日任务启用状态
-    toggleTodayTask(taskId) {
-        this.storage.toggleTodayTaskEnabled(taskId);
-        this.renderTodayTasks();
-        this.showToast('任务状态已更新', 'success');
-    }
-
-    // 删除今日任务
-    removeTodayTask(taskId) {
-        if (confirm('确定要删除这个今日任务吗？')) {
-            this.storage.removeTodayTask(taskId);
-            this.renderTodayTasks();
-            this.showToast('任务删除成功！', 'success');
+    // 显示添加任务模态框
+    showAddTaskModal() {
+        const modal = document.getElementById('addTaskModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            const input = document.getElementById('taskName');
+            if (input) input.focus();
         }
     }
 
-    // 刷新今日任务
-    refreshTodayTasks() {
-        this.storage.refreshTodayTasks();
-        this.renderTodayTasks();
-        this.showToast('今日任务已刷新！', 'success');
+    // 隐藏添加任务模态框
+    hideAddTaskModal() {
+        const modal = document.getElementById('addTaskModal');
+        if (modal) {
+            modal.style.display = 'none';
+            this.clearAddTaskForm();
+        }
+    }
+
+    // 清空添加任务表单
+    clearAddTaskForm() {
+        const elements = ['taskName', 'taskType', 'taskDescription', 'taskIcon'];
+        elements.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                if (id === 'taskType') {
+                    element.value = 'daily';
+                } else if (id === 'taskIcon') {
+                    element.value = '📚';
+                } else {
+                    element.value = '';
+                }
+            }
+        });
+
+        // 重置图标选择
+        document.querySelectorAll('#addTaskModal .icon-option').forEach(btn => {
+            btn.classList.remove('selected');
+        });
+        document.querySelector('#addTaskModal .icon-option[data-icon="📚"]')?.classList.add('selected');
+    }
+
+    // 添加新任务
+    addNewTask() {
+        const taskName = document.getElementById('taskName')?.value.trim();
+        const taskIcon = document.getElementById('taskIcon')?.value || '📚';
+
+        if (!taskName) {
+            this.showToast('请输入任务名称', 'error');
+            return;
+        }
+
+        try {
+            const tasks = this.storage.getTasks();
+            const newTaskName = `${taskIcon} ${taskName}`;
+            tasks.push(newTaskName);
+            this.storage.setTasks(tasks);
+            this.storage.updateDailyTemplate(tasks);
+            
+            this.hideAddTaskModal();
+            this.renderTasksList();
+            this.showToast('任务添加成功！', 'success');
+        } catch (error) {
+            this.showToast('添加任务失败：' + error.message, 'error');
+        }
+    }
+
+    // 导出数据
+    exportTasks() {
+        try {
+            const data = this.storage.exportData();
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `任务数据_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            this.showToast('数据导出成功！', 'success');
+        } catch (error) {
+            this.showToast('导出失败：' + error.message, 'error');
+        }
+    }
+
+    // 导入数据
+    importTasks() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const success = this.storage.importData(e.target.result);
+                        if (success) {
+                            this.renderTasksList();
+                            this.loadUsername();
+                            this.showToast('数据导入成功！', 'success');
+                        } else {
+                            this.showToast('导入失败，请检查数据格式', 'error');
+                        }
+                    } catch (error) {
+                        this.showToast('导入失败：' + error.message, 'error');
+                    }
+                };
+                reader.readAsText(file);
+            }
+        };
+        input.click();
     }
 
     // 重置所有任务
@@ -556,73 +468,7 @@ class TaskEditor {
             this.storage.setTasks(defaultTasks);
             this.storage.updateDailyTemplate(defaultTasks);
             this.renderTasksList();
-            this.renderTodayTasks();
             this.showToast('默认任务已恢复！', 'success');
-        }
-    }
-
-    // 导出数据
-    exportData() {
-        try {
-            const data = this.storage.exportData();
-            const blob = new Blob([data], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `任务数据_${new Date().toISOString().split('T')[0]}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            this.showToast('数据导出成功！', 'success');
-        } catch (error) {
-            this.showToast('导出失败：' + error.message, 'error');
-        }
-    }
-
-    // 导入数据
-    importData() {
-        const modal = document.getElementById('import-modal');
-        if (modal) {
-            modal.style.display = 'flex';
-            const textarea = document.getElementById('import-textarea');
-            if (textarea) textarea.focus();
-        }
-    }
-
-    // 确认导入
-    confirmImport() {
-        const textarea = document.getElementById('import-textarea');
-        const jsonData = textarea ? textarea.value.trim() : '';
-        
-        if (!jsonData) {
-            this.showToast('请输入要导入的数据', 'error');
-            return;
-        }
-        
-        try {
-            const success = this.storage.importData(jsonData);
-            if (success) {
-                this.closeImportModal();
-                this.renderTasksList();
-                this.renderTodayTasks();
-                this.loadUsername();
-                this.showToast('数据导入成功！', 'success');
-            } else {
-                this.showToast('导入失败，请检查数据格式', 'error');
-            }
-        } catch (error) {
-            this.showToast('导入失败：' + error.message, 'error');
-        }
-    }
-
-    // 关闭导入模态框
-    closeImportModal() {
-        const modal = document.getElementById('import-modal');
-        if (modal) {
-            modal.style.display = 'none';
-            const textarea = document.getElementById('import-textarea');
-            if (textarea) textarea.value = '';
         }
     }
 
@@ -666,42 +512,34 @@ class TaskEditor {
 }
 
 // 全局函数
+// 返回上一页
 function goBack() {
-    window.location.href = 'index.html';
-}
-
-function saveUsername() {
-    const username = document.getElementById('username-input').value.trim();
-    if (username) {
-        taskEditor.storage.setUsername(username);
-        taskEditor.showToast('用户名已保存！', 'success');
+    // 优先返回首页，确保导航正确
+    if (document.referrer && document.referrer.includes('index.html')) {
+        window.history.back();
     } else {
-        taskEditor.showToast('请输入用户名', 'error');
+        window.location.href = 'index.html';
     }
 }
 
+function showAddTaskModal() {
+    taskEditor.showAddTaskModal();
+}
+
+function hideAddTaskModal() {
+    taskEditor.hideAddTaskModal();
+}
+
 function addNewTask() {
-    taskEditor.showAddTaskForm();
+    taskEditor.addNewTask();
 }
 
-function confirmAddTask() {
-    taskEditor.confirmAddTask();
+function importTasks() {
+    taskEditor.importTasks();
 }
 
-function cancelAddTask() {
-    taskEditor.cancelAddTask();
-}
-
-function onTaskTypeChange() {
-    taskEditor.onTaskTypeChange();
-}
-
-function onFrequencyChange() {
-    taskEditor.onFrequencyChange();
-}
-
-function refreshTodayTasks() {
-    taskEditor.refreshTodayTasks();
+function exportTasks() {
+    taskEditor.exportTasks();
 }
 
 function resetAllTasks() {
@@ -712,21 +550,40 @@ function restoreDefaultTasks() {
     taskEditor.restoreDefaultTasks();
 }
 
-function exportData() {
-    taskEditor.exportData();
+function hideEditTaskModal() {
+    taskEditor.hideEditTaskModal();
 }
 
-function importData() {
-    taskEditor.importData();
+function saveEditTask() {
+    taskEditor.saveEditTask();
 }
 
-function confirmImport() {
-    taskEditor.confirmImport();
-}
-
-function closeImportModal() {
-    taskEditor.closeImportModal();
-}
+// 图标选择功能
+document.addEventListener('DOMContentLoaded', function() {
+    // 图标选择器事件
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('icon-option')) {
+            // 获取当前模态框
+            const modal = e.target.closest('.modal');
+            if (modal) {
+                // 移除同一模态框内其他选中状态
+                modal.querySelectorAll('.icon-option').forEach(btn => {
+                    btn.classList.remove('selected');
+                });
+                
+                // 添加选中状态
+                e.target.classList.add('selected');
+                
+                // 更新对应的隐藏输入框的值
+                const icon = e.target.getAttribute('data-icon');
+                const iconInput = modal.querySelector('input[type="hidden"]');
+                if (iconInput) {
+                    iconInput.value = icon;
+                }
+            }
+        }
+    });
+});
 
 // 创建全局实例
 const taskEditor = new TaskEditor();

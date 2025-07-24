@@ -1,0 +1,20 @@
+{
+  "path": "d:\\AI-code\\codebuddy\\任务卡片管理",
+  "desc": "这是一个儿童友好的每日任务管理工具，帮助小朋友培养良好习惯和专注力。主要功能包括：任务卡片展示、进度跟踪、专注力训练、统计分析、任务编辑管理等。采用现代化设计，支持拖拽排序、PWA离线使用，完美适配桌面和移动设备。",
+  "id": "3c9ed083ac5e4d47b02e7cb2c25ba382",
+  "data": {
+    "spaceKey": "3c9ed083ac5e4d47b02e7cb2c25ba382",
+    "connections": {
+      "webIDE": "https://3c9ed083ac5e4d47b02e7cb2c25ba382.ap-singapore.cloudstudio.club",
+      "preview": "https://3c9ed083ac5e4d47b02e7cb2c25ba382--{port}.ap-singapore.cloudstudio.club",
+      "api": "https://3c9ed083ac5e4d47b02e7cb2c25ba382--api.ap-singapore.cloudstudio.club",
+      "pty": "https://3c9ed083ac5e4d47b02e7cb2c25ba382--pty.ap-singapore.cloudstudio.club"
+    }
+  },
+  "config": {
+    "api": "https://3c9ed083ac5e4d47b02e7cb2c25ba382--api.ap-singapore.cloudstudio.club",
+    "pty": "https://3c9ed083ac5e4d47b02e7cb2c25ba382--pty.ap-singapore.cloudstudio.club",
+    "region": "ap-shanghai",
+    "spaceKey": "3c9ed083ac5e4d47b02e7cb2c25ba382"
+  }
+}
