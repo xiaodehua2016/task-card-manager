@@ -245,27 +245,80 @@
     
     .complete-btn {
         padding: 10px;
-        font-size: 0.95rem;
+        font-size: 0.9rem;
+        border-radius: 6px;
     }
 }
 
-/* 平板端优化 */
-@media (min-width: 769px) and (max-width: 1024px) {
-    .task-card {
-        padding: 22px;
-    }
-    
-    .task-icon {
-        font-size: 2.8rem;
-        height: 55px;
-    }
-    
-    .task-title {
-        font-size: 1.15rem;
-    }
-    
-    .complete-btn {
-        padding: 12px;
-        font-size: 1rem;
-    }
+.task-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 15px;
+    width: 100%;
+}
+
+.task-btn {
+    flex: 1;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.start-btn {
+    background: linear-gradient(135deg, #4299e1, #3182ce);
+    color: white;
+}
+
+.start-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(66, 153, 225, 0.4);
+}
+
+.complete-btn {
+    background: linear-gradient(135deg, #48bb78, #38a169);
+    color: white;
+}
+
+.complete-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(72, 187, 120, 0.4);
+}
+
+.complete-btn.completed {
+    background: linear-gradient(135deg, #a0aec0, #718096);
+}
+
+.complete-btn.completed:hover {
+    box-shadow: 0 4px 15px rgba(160, 174, 192, 0.4);
+}
+
+.task-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.btn-icon {
+    font-size: 0.8rem;
+}
+
+/* 任务时间统计显示 */
+.task-time-info {
+    font-size: 0.8rem;
+    color: #718096;
+    margin-top: 8px;
+    text-align: center;
+}
+
+.task-time-info.has-time {
+    color: #48bb78;
+    font-weight: 500;
 }

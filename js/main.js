@@ -35,40 +35,170 @@ class TaskManager {
     }
 
     // 渲染任务卡片
+    // 渲染任务卡片
     renderTasks() {
         const tasksGrid = document.getElementById('tasks-grid');
         if (!tasksGrid) return;
 
-        const tasks = this.storage.getTasks();
+        // 使用新的今日任务系统
+        const todayTasks = this.storage.getTodayTasks();
+        const enabledTasks = todayTasks.filter(task => task.enabled);
         const completion = this.storage.getTodayCompletion();
         
         tasksGrid.innerHTML = '';
 
-        tasks.forEach((task, index) => {
+        if (enabledTasks.length === 0) {
+            tasksGrid.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">📝</div>
+                    <h3>今日没有任务</h3>
+                    <p>点击底部的"编辑任务"按钮添加任务吧！</p>
+                </div>
+            `;
+            return;
+        }
+
+        enabledTasks.forEach((task, index) => {
             const isCompleted = completion[index] || false;
-            const taskCard = this.createTaskCard(task, index, isCompleted);
+            const taskCard = this.createTaskCard(task.name, index, isCompleted, task);
             tasksGrid.appendChild(taskCard);
         });
     }
 
     // 创建任务卡片
-    createTaskCard(taskName, index, isCompleted) {
+    // 创建任务卡片
+    createTaskCard(taskName, index, isCompleted, taskInfo = null) {
         const card = document.createElement('div');
         card.className = `task-card ${isCompleted ? 'completed' : ''}`;
         card.setAttribute('data-task', taskName);
         
+        // 获取任务时间信息
+        const taskTime = this.storage.getTaskTime(index);
+        const timeDisplay = taskTime ? this.formatTime(taskTime) : '未统计';
+        
+        // 获取任务类型标签
+        const taskTypeLabel = this.getTaskTypeLabel(taskInfo?.type || 'daily');
+        const taskTypeBadge = taskInfo?.type ? `
+            <div class="task-type-badge ${taskInfo.type}">
+                ${taskTypeLabel}
+            </div>
+        ` : '';
+        
+        // 获取任务额外信息
+        const taskExtraInfo = this.getTaskExtraInfo(taskInfo);
+        
         card.innerHTML = `
-            <div class="task-icon"></div>
+            <div class="task-header">
+                <div class="task-icon"></div>
+                ${taskTypeBadge}
+            </div>
             <div class="task-title">${taskName}</div>
-            <button class="complete-btn ${isCompleted ? 'completed' : ''}" 
-                    onclick="taskManager.toggleTask(${index})">
-                <span class="btn-text">
-                    ${isCompleted ? '✅ 已完成' : '⭕ 点击完成'}
-                </span>
-            </button>
+            ${taskExtraInfo}
+            <div class="task-time-info ${taskTime ? 'has-time' : ''}">
+                用时：${timeDisplay}
+            </div>
+            <div class="task-buttons">
+                <button class="task-btn start-btn" 
+                        onclick="taskManager.startTask(${index})"
+                        ${isCompleted ? 'disabled' : ''}>
+                    <span class="btn-icon">⏱️</span>
+                    <span>开始执行</span>
+                </button>
+                <button class="task-btn complete-btn ${isCompleted ? 'completed' : ''}" 
+                        onclick="taskManager.toggleTask(${index})">
+                    <span class="btn-icon">${isCompleted ? '✅' : '⭕'}</span>
+                    <span>${isCompleted ? '已完成' : '完成'}</span>
+                </button>
+            </div>
         `;
 
         return card;
+    }
+
+    // 开始执行任务
+    // 获取任务类型标签
+    getTaskTypeLabel(type) {
+        const labels = {
+            daily: '每日',
+            oneTime: '一次性',
+            routine: '例行'
+        };
+        return labels[type] || '每日';
+    }
+    
+    // 获取任务额外信息
+    getTaskExtraInfo(taskInfo) {
+        if (!taskInfo) return '';
+        
+        let extraInfo = '';
+        
+        if (taskInfo.type === 'oneTime' && taskInfo.dueDate) {
+            const dueDate = new Date(taskInfo.dueDate);
+            const today = new Date();
+            const diffDays = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 0) {
+                extraInfo = '<div class="task-due-info urgent">今日截止</div>';
+            } else if (diffDays === 1) {
+                extraInfo = '<div class="task-due-info warning">明日截止</div>';
+            } else if (diffDays > 1) {
+                extraInfo = `<div class="task-due-info">${diffDays}天后截止</div>`;
+            } else {
+                extraInfo = '<div class="task-due-info overdue">已过期</div>';
+            }
+        } else if (taskInfo.type === 'routine') {
+            const frequencyText = this.getFrequencyText(taskInfo);
+            if (frequencyText) {
+                extraInfo = `<div class="task-frequency-info">${frequencyText}</div>`;
+            }
+        }
+        
+        if (taskInfo.description) {
+            extraInfo += `<div class="task-description">${taskInfo.description}</div>`;
+        }
+        
+        return extraInfo;
+    }
+    
+    // 获取频率文本
+    getFrequencyText(taskInfo) {
+        if (taskInfo.frequency === 'weekly' && taskInfo.weekdays) {
+            const weekdayNames = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+            const days = taskInfo.weekdays.map(day => weekdayNames[day]).join('、');
+            return `每周：${days}`;
+        } else if (taskInfo.frequency === 'monthly' && taskInfo.monthDays) {
+            return `每月：${taskInfo.monthDays.join('、')}号`;
+        } else if (taskInfo.frequency === 'interval' && taskInfo.intervalDays) {
+            return `每${taskInfo.intervalDays}天执行`;
+        }
+        return '';
+    }
+
+    // 开始执行任务
+    startTask(taskIndex) {
+        const todayTasks = this.storage.getTodayTasks();
+        const enabledTasks = todayTasks.filter(task => task.enabled);
+        const taskInfo = enabledTasks[taskIndex];
+        const taskName = taskInfo ? taskInfo.name : this.storage.getTasks()[taskIndex];
+        
+        // 跳转到专注挑战页面，并传递任务信息
+        const url = `focus-challenge.html?task=${encodeURIComponent(taskName)}&index=${taskIndex}`;
+        window.location.href = url;
+    }
+
+    // 格式化时间显示
+    formatTime(seconds) {
+        if (seconds < 60) {
+            return `${seconds}秒`;
+        } else if (seconds < 3600) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return remainingSeconds > 0 ? `${minutes}分${remainingSeconds}秒` : `${minutes}分钟`;
+        } else {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            return minutes > 0 ? `${hours}小时${minutes}分钟` : `${hours}小时`;
+        }
     }
 
     // 切换任务完成状态
@@ -331,12 +461,27 @@ class TaskManager {
 }
 
 // 全局函数
+// 打开编辑任务页面
 function openEditTasks() {
     window.location.href = 'edit-tasks.html';
 }
 
+// 打开今日任务管理页面
+function openTodayTasksManager() {
+    window.location.href = 'today-tasks.html';
+}
+
+// 页面跳转函数
 function openFocusChallenge() {
     window.location.href = 'focus-challenge.html';
+}
+
+function openEditTasks() {
+    window.location.href = 'edit-tasks.html';
+}
+
+function openTodayTasksManager() {
+    window.location.href = 'today-tasks.html';
 }
 
 function openStatistics() {

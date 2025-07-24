@@ -8,15 +8,147 @@ class FocusChallenge {
         this.isRunning = false;
         this.targetDuration = 15 * 60; // 默认15分钟
         this.currentDuration = 0;
+        
+        // 任务模式相关属性
+        this.taskMode = false;
+        this.taskIndex = null;
+        this.taskName = null;
+        this.sessionStartTime = null;
+        
         this.init();
     }
 
     // 初始化
     init() {
+        this.parseUrlParams();
         this.updateDisplay();
         this.loadTodayRecords();
         this.updateSummary();
         this.setupProgressRing();
+        this.updateTaskInfo();
+    }
+
+    // 解析URL参数
+    parseUrlParams() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const taskParam = urlParams.get('task');
+        const indexParam = urlParams.get('index');
+        
+        if (taskParam && indexParam !== null) {
+            this.taskMode = true;
+            this.taskName = decodeURIComponent(taskParam);
+            this.taskIndex = parseInt(indexParam);
+            
+            // 任务模式下默认设置较短的专注时间
+            this.targetDuration = 25 * 60; // 25分钟
+        }
+    }
+
+    // 更新任务信息显示
+    updateTaskInfo() {
+        const taskInfoElement = document.getElementById('task-info');
+        if (!taskInfoElement) return;
+        
+        if (this.taskMode) {
+            // 获取该任务今日已累计时间
+            const totalTime = this.storage.getTaskTime(this.taskIndex);
+            const executionRecords = this.storage.getTaskExecutionRecords(this.taskIndex);
+            
+            taskInfoElement.innerHTML = `
+                <div class="task-info-content">
+                    <h3>🎯 正在执行任务</h3>
+                    <p class="task-name">${this.taskName}</p>
+                    <div class="task-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">今日累计时间：</span>
+                            <span class="stat-value">${this.formatTime(totalTime)}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">执行次数：</span>
+                            <span class="stat-value">${executionRecords.length}次</span>
+                        </div>
+                    </div>
+                    <p class="task-tip">💡 完成专注后时间将自动累计到任务记录中</p>
+                </div>
+            `;
+            taskInfoElement.style.display = 'block';
+            
+            // 添加任务信息样式
+            this.addTaskInfoStyles();
+        } else {
+            taskInfoElement.style.display = 'none';
+        }
+    }
+
+    // 添加任务信息样式
+    addTaskInfoStyles() {
+        if (!document.querySelector('#task-info-style')) {
+            const style = document.createElement('style');
+            style.id = 'task-info-style';
+            style.textContent = `
+                #task-info {
+                    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+                    border: 2px solid rgba(102, 126, 234, 0.3);
+                    border-radius: 16px;
+                    padding: 20px;
+                    margin-bottom: 20px;
+                    backdrop-filter: blur(10px);
+                }
+                
+                .task-info-content h3 {
+                    margin: 0 0 10px 0;
+                    color: #667eea;
+                    text-align: center;
+                }
+                
+                .task-name {
+                    font-size: 1.2rem;
+                    font-weight: bold;
+                    text-align: center;
+                    margin: 10px 0;
+                    color: #2d3748;
+                }
+                
+                .task-stats {
+                    display: flex;
+                    justify-content: space-around;
+                    margin: 15px 0;
+                }
+                
+                .stat-item {
+                    text-align: center;
+                }
+                
+                .stat-label {
+                    display: block;
+                    font-size: 0.9rem;
+                    color: #718096;
+                    margin-bottom: 5px;
+                }
+                
+                .stat-value {
+                    display: block;
+                    font-size: 1.1rem;
+                    font-weight: bold;
+                    color: #667eea;
+                }
+                
+                .task-tip {
+                    text-align: center;
+                    font-size: 0.9rem;
+                    color: #718096;
+                    margin: 15px 0 0 0;
+                }
+                
+                @media (max-width: 480px) {
+                    .task-stats {
+                        flex-direction: column;
+                        gap: 10px;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
     }
 
     // 设置进度环
@@ -43,6 +175,7 @@ class FocusChallenge {
     startTimer() {
         this.isRunning = true;
         this.startTime = Date.now() - this.pausedTime;
+        this.sessionStartTime = new Date(); // 记录本次会话开始时间
         
         // 更新按钮状态
         const btn = document.getElementById('start-stop-btn');
@@ -64,7 +197,8 @@ class FocusChallenge {
             this.updateTimer();
         }, 100);
         
-        this.showToast('开始专注！加油！', 'success');
+        const message = this.taskMode ? `开始执行"${this.taskName}"！专注加油！` : '开始专注！加油！';
+        this.showToast(message, 'success');
     }
 
     // 停止计时
@@ -106,6 +240,7 @@ class FocusChallenge {
         this.startTime = null;
         this.pausedTime = 0;
         this.currentDuration = 0;
+        this.sessionStartTime = null;
         
         // 重置按钮状态
         const btn = document.getElementById('start-stop-btn');
@@ -169,13 +304,45 @@ class FocusChallenge {
         // 保存记录
         this.saveRecord(this.currentDuration);
         
+        // 如果是任务模式，保存任务执行记录
+        if (this.taskMode && this.sessionStartTime) {
+            this.saveTaskExecution(this.currentDuration);
+        }
+        
         // 显示庆祝动画
         this.showCelebration();
         
         // 重置计时器
         setTimeout(() => {
             this.resetTimer();
+            // 更新任务信息显示
+            if (this.taskMode) {
+                this.updateTaskInfo();
+            }
         }, 3000);
+    }
+
+    // 保存任务执行记录
+    saveTaskExecution(duration) {
+        if (!this.taskMode || this.taskIndex === null) return;
+        
+        const endTime = new Date();
+        
+        // 添加任务执行记录（会自动累计时间）
+        this.storage.addTaskExecutionRecord(
+            this.taskIndex,
+            duration,
+            this.sessionStartTime.toLocaleTimeString(),
+            endTime.toLocaleTimeString()
+        );
+        
+        const totalTime = this.storage.getTaskTime(this.taskIndex);
+        const message = `任务"${this.taskName}"完成！本次用时${this.formatTime(duration)}，今日累计${this.formatTime(totalTime)}`;
+        
+        // 延迟显示，避免与庆祝动画冲突
+        setTimeout(() => {
+            this.showToast(message, 'success', 4000);
+        }, 1000);
     }
 
     // 显示庆祝动画
@@ -235,7 +402,10 @@ class FocusChallenge {
             startTime: new Date(this.startTime).toLocaleTimeString(),
             duration: duration,
             targetDuration: this.targetDuration,
-            completed: duration >= this.targetDuration
+            completed: duration >= this.targetDuration,
+            taskMode: this.taskMode,
+            taskName: this.taskName || null,
+            taskIndex: this.taskIndex || null
         };
         
         data.focusRecords[today].push(record);
@@ -266,7 +436,10 @@ class FocusChallenge {
         
         recordsList.innerHTML = records.map((record, index) => `
             <div class="record-item">
-                <div class="record-time">${record.startTime}</div>
+                <div class="record-info">
+                    <div class="record-time">${record.startTime}</div>
+                    ${record.taskMode ? `<div class="record-task">📋 ${record.taskName}</div>` : ''}
+                </div>
                 <div class="record-duration">
                     ${this.formatTime(record.duration)}
                     ${record.completed ? '✅' : '⏸️'}
@@ -283,6 +456,7 @@ class FocusChallenge {
         
         const totalTime = records.reduce((sum, record) => sum + record.duration, 0);
         const focusCount = records.length;
+        const taskFocusCount = records.filter(r => r.taskMode).length;
         
         const totalTimeElement = document.getElementById('total-time');
         const focusCountElement = document.getElementById('focus-count');
@@ -292,7 +466,7 @@ class FocusChallenge {
         }
         
         if (focusCountElement) {
-            focusCountElement.textContent = `${focusCount}次`;
+            focusCountElement.textContent = `${focusCount}次 (任务${taskFocusCount}次)`;
         }
     }
 

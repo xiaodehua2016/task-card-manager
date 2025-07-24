@@ -20,6 +20,11 @@
         </header>
 
         <main class="focus-container">
+            <!-- 任务信息显示区域 -->
+            <div class="task-info" id="task-info" style="display: none;">
+                <!-- 任务信息将通过JavaScript动态生成 -->
+            </div>
+            
             <!-- 计时器显示区域 -->
             <div class="timer-section">
                 <div class="timer-display" id="timer-display">
@@ -102,6 +107,32 @@
     </div>
 
     <script src="js/storage.js"></script>
+    <script src="js/storage.js"></script>
     <script src="js/focus.js"></script>
+    <script>
+        // 返回按钮功能
+        function goBack() {
+            window.history.back();
+        }
+        
+        // 全局函数定义
+        function toggleTimer() {
+            if (window.focusChallenge) {
+                window.focusChallenge.toggleTimer();
+            }
+        }
+        
+        function resetTimer() {
+            if (window.focusChallenge) {
+                window.focusChallenge.resetTimer();
+            }
+        }
+        
+        function setPresetTime(minutes) {
+            if (window.focusChallenge) {
+                window.focusChallenge.setPresetTime(minutes);
+            }
+        }
+    </script>
 </body>
 </html>

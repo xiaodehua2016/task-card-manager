@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>今日任务管理 - 任务卡片管理</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/today-tasks.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+</head>
+<body>
+    <div class="page-container">
+        <!-- 页面头部 -->
+        <header class="page-header">
+            <button class="back-btn" onclick="goBack()">
+                <span class="back-icon">←</span>
+                <span>返回</span>
+            </button>
+            <h1 class="page-title">今日任务管理</h1>
+            <button class="refresh-btn" onclick="todayTasksManager.refreshTasks()">
+                <span class="refresh-icon">🔄</span>
+                <span>刷新</span>
+            </button>
+        </header>
+
+        <!-- 主要内容区域 -->
+        <main class="main-content">
+            <!-- 今日任务概览 -->
+            <div class="tasks-overview">
+                <div class="overview-card">
+                    <div class="overview-icon">📋</div>
+                    <div class="overview-info">
+                        <div class="overview-title">今日任务</div>
+                        <div class="overview-count" id="total-tasks-count">0</div>
+                    </div>
+                </div>
+                <div class="overview-card">
+                    <div class="overview-icon">✅</div>
+                    <div class="overview-info">
+                        <div class="overview-title">已启用</div>
+                        <div class="overview-count" id="enabled-tasks-count">0</div>
+                    </div>
+                </div>
+                <div class="overview-card">
+                    <div class="overview-icon">⏸️</div>
+                    <div class="overview-info">
+                        <div class="overview-title">已禁用</div>
+                        <div class="overview-count" id="disabled-tasks-count">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 任务列表 -->
+            <div class="tasks-section">
+                <div class="section-header">
+                    <h2>任务列表</h2>
+                    <div class="section-actions">
+                        <button class="action-btn" onclick="todayTasksManager.enableAllTasks()">
+                            <span>✅</span>
+                            <span>全部启用</span>
+                        </button>
+                        <button class="action-btn" onclick="todayTasksManager.resetToDefault()">
+                            <span>🔄</span>
+                            <span>恢复默认</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="tasks-list" class="tasks-list">
+                    <!-- 任务列表将通过JavaScript动态生成 -->
+                </div>
+            </div>
+
+            <!-- 操作提示 -->
+            <div class="tips-section">
+                <div class="tips-card">
+                    <div class="tips-icon">💡</div>
+                    <div class="tips-content">
+                        <h3>使用提示</h3>
+                        <ul>
+                            <li>可以临时禁用今日不需要的任务</li>
+                            <li>禁用的任务不会在主页面显示</li>
+                            <li>一次性任务和例行任务可以删除</li>
+                            <li>每日任务只能禁用，不能删除</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast 提示 -->
+    <div id="toast" class="toast"></div>
+
+    <script src="js/storage.js"></script>
+    <script src="js/today-tasks.js"></script>
+    <script>
+        // 初始化今日任务管理器
+        const todayTasksManager = new TodayTasksManager();
+        
+        // 返回按钮功能
+        function goBack() {
+            window.history.back();
+        }
+    </script>
+</body>
+</html>
