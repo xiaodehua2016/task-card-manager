@@ -73,6 +73,7 @@ class TaskStorage {
     }
 
     // 执行初始同步 - 智能合并本地和云端数据
+    // 执行初始同步 - 智能合并本地和云端数据（优化版）
     async performInitialSync() {
         if (!this.cloudSyncEnabled) return;
 
@@ -84,15 +85,27 @@ class TaskStorage {
             const localData = this.getAllData();
             
             if (!cloudData) {
-                // 云端没有数据，上传本地数据
-                console.log('📤 云端无数据，上传本地数据');
-                await this.syncToCloud();
+                // 云端没有数据，检查本地数据是否有实际内容
+                const hasRealData = this.hasRealUserData(localData);
+                if (hasRealData) {
+                    console.log('📤 云端无数据，本地有用户数据，上传到云端');
+                    await this.syncToCloud();
+                } else {
+                    console.log('📋 云端和本地都是初始数据，无需同步');
+                }
                 return;
             }
             
             // 比较时间戳，决定使用哪个数据
             const cloudTime = cloudData.lastUpdateTime || 0;
             const localTime = localData.lastUpdateTime || 0;
+            
+            // 时间戳差异小于5秒，认为是相同的数据
+            const timeDiff = Math.abs(cloudTime - localTime);
+            if (timeDiff < 5000) {
+                console.log('📋 云端和本地数据基本同步，无需更新');
+                return;
+            }
             
             if (cloudTime > localTime) {
                 // 云端数据更新，使用云端数据
@@ -103,17 +116,45 @@ class TaskStorage {
                 // 本地数据更新，上传到云端
                 console.log('📤 使用本地数据（更新时间：' + new Date(localTime).toLocaleString() + '）');
                 await this.syncToCloud();
-            } else {
-                // 时间戳相同，进行智能合并
-                console.log('🔄 数据时间戳相同，进行智能合并');
-                const mergedData = this.mergeData(localData, cloudData);
-                this.loadFromData(mergedData);
-                await this.syncToCloud();
             }
             
         } catch (error) {
             console.error('初始同步失败:', error);
         }
+    }
+
+    // 检查是否有真实的用户数据（非初始化数据）
+    hasRealUserData(data) {
+        // 检查是否有完成历史记录
+        if (data.completionHistory && Object.keys(data.completionHistory).length > 0) {
+            return true;
+        }
+        
+        // 检查是否有任务时间记录
+        if (data.taskTimes && Object.keys(data.taskTimes).length > 0) {
+            return true;
+        }
+        
+        // 检查是否有专注记录
+        if (data.focusRecords && Object.keys(data.focusRecords).length > 0) {
+            return true;
+        }
+        
+        // 检查是否有自定义任务
+        if (data.oneTimeTasks && data.oneTimeTasks.length > 0) {
+            return true;
+        }
+        
+        if (data.routineTasks && data.routineTasks.length > 0) {
+            return true;
+        }
+        
+        // 检查用户名是否被修改过
+        if (data.username && data.username !== '小久') {
+            return true;
+        }
+        
+        return false;
     }
 
     // 从数据对象加载数据
@@ -400,10 +441,14 @@ class TaskStorage {
     }
 
     // 初始化数据
+    // 初始化数据（优化版 - 避免不必要的云端同步）
     initializeData() {
         const data = this.getData();
+        let needsSave = false;
+        
         if (!data.username) {
             data.username = '小久';
+            needsSave = true;
         }
         
         // 初始化任务模板
@@ -420,38 +465,50 @@ class TaskStorage {
                     { name: '体育/运动（迪卡侬）', type: 'daily' }
                 ]
             };
+            needsSave = true;
         }
         
         // 初始化今日任务（如果不存在）
         if (!data.dailyTasks) {
             data.dailyTasks = {};
+            needsSave = true;
         }
         
         // 初始化一次性任务
         if (!data.oneTimeTasks) {
             data.oneTimeTasks = [];
+            needsSave = true;
         }
         
         // 初始化例行任务
         if (!data.routineTasks) {
             data.routineTasks = [];
+            needsSave = true;
         }
         
         // 兼容旧版本数据
         if (!data.tasks || data.tasks.length === 0) {
             data.tasks = data.taskTemplates.daily.map(task => task.name);
+            needsSave = true;
         }
         
         if (!data.completionHistory) {
             data.completionHistory = {};
+            needsSave = true;
         }
 
         // 添加最后更新时间
         if (!data.lastUpdateTime) {
             data.lastUpdateTime = Date.now();
+            needsSave = true;
         }
         
-        this.saveData(data);
+        // 只有在需要时才保存，并且使用本地保存（不触发云端同步）
+        if (needsSave) {
+            this.saveDataLocal(data);
+            console.log('📋 初始化数据已保存到本地存储');
+        }
+        
         this.lastKnownUpdateTime = data.lastUpdateTime;
     }
 
@@ -467,7 +524,8 @@ class TaskStorage {
     }
 
     // 保存数据（添加时间戳）
-    saveData(data) {
+    // 保存数据（添加时间戳和智能同步控制）
+    saveData(data, options = {}) {
         try {
             // 更新时间戳
             data.lastUpdateTime = Date.now();
@@ -481,9 +539,15 @@ class TaskStorage {
                 detail: { timestamp: data.lastUpdateTime }
             }));
             
-            // 如果启用了云端同步，上传到云端
-            if (this.cloudSyncEnabled && !this.syncInProgress) {
-                this.uploadToCloud(data);
+            // 智能云端同步控制
+            if (this.cloudSyncEnabled && !this.syncInProgress && !options.skipCloudSync) {
+                // 只有在用户实际操作时才上传到云端
+                if (options.userAction || this.isUserActionData(data)) {
+                    console.log('📤 用户操作触发云端同步');
+                    this.uploadToCloud(data);
+                } else {
+                    console.log('📋 系统操作，跳过云端同步');
+                }
             }
             
             return true;
@@ -491,6 +555,30 @@ class TaskStorage {
             console.error('保存数据失败:', error);
             return false;
         }
+    }
+
+    // 判断是否为用户操作产生的数据
+    isUserActionData(data) {
+        const now = Date.now();
+        const recentTime = 10000; // 10秒内的操作认为是用户操作
+        
+        // 检查最近是否有完成状态变化
+        if (data.completionHistory) {
+            const today = this.getTodayString();
+            if (data.completionHistory[today]) {
+                return true; // 有今日完成记录，认为是用户操作
+            }
+        }
+        
+        // 检查最近是否有任务时间记录
+        if (data.taskTimes) {
+            const today = this.getTodayString();
+            if (data.taskTimes[today] && Object.keys(data.taskTimes[today]).length > 0) {
+                return true; // 有今日时间记录，认为是用户操作
+            }
+        }
+        
+        return false;
     }
 
     // 仅保存到本地（不触发云端同步）
@@ -575,7 +663,8 @@ class TaskStorage {
     }
 
     // 设置今日完成状态
-    setTodayCompletion(completionArray) {
+    // 设置今日完成状态
+    setTodayCompletion(completionArray, options = {}) {
         const today = this.getTodayString();
         const data = this.getData();
         
@@ -584,15 +673,16 @@ class TaskStorage {
         }
         
         data.completionHistory[today] = completionArray;
-        return this.saveData(data);
+        return this.saveData(data, options);
     }
 
+    // 切换任务完成状态
     // 切换任务完成状态
     toggleTaskCompletion(taskIndex) {
         const completion = this.getTodayCompletion();
         if (taskIndex >= 0 && taskIndex < completion.length) {
             completion[taskIndex] = !completion[taskIndex];
-            return this.setTodayCompletion(completion);
+            return this.setTodayCompletion(completion, { userAction: true });
         }
         return false;
     }
@@ -699,6 +789,7 @@ class TaskStorage {
     }
 
     // 设置任务时间记录（累计模式）
+    // 设置任务时间记录（累计模式）
     setTaskTime(taskIndex, seconds) {
         const today = this.getTodayString();
         const data = this.getData();
@@ -712,7 +803,7 @@ class TaskStorage {
         }
         
         data.taskTimes[today][taskIndex] = seconds;
-        return this.saveData(data);
+        return this.saveData(data, { userAction: true });
     }
 
     // 累加任务时间记录
@@ -732,7 +823,7 @@ class TaskStorage {
         const currentTime = data.taskTimes[today][taskIndex] || 0;
         data.taskTimes[today][taskIndex] = currentTime + seconds;
         
-        return this.saveData(data);
+        return this.saveData(data, { userAction: true });
     }
 
     // 获取任务的所有执行记录
