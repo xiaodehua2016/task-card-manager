@@ -66,6 +66,7 @@ class SupabaseConfig {
     }
 
     // 检查或创建用户
+    // 检查或创建用户（单用户系统）
     async checkUser() {
         if (!this.supabase) {
             console.warn('Supabase客户端未初始化');
@@ -73,49 +74,76 @@ class SupabaseConfig {
         }
 
         try {
-            // 获取本地存储的用户ID
-            let userId = localStorage.getItem('supabase_user_id');
+            const username = window.taskStorage?.getUsername() || '小久';
             
-            if (userId) {
-                // 验证用户是否存在
-                const { data, error } = await this.supabase
-                    .from('users')
-                    .select('id, username')
-                    .eq('id', userId)
-                    .single();
-                
-                if (!error && data) {
-                    this.currentUser = data;
-                    console.log('用户验证成功:', data);
-                    return this.currentUser;
-                } else {
-                    // 用户不存在，清除本地记录
-                    localStorage.removeItem('supabase_user_id');
-                    userId = null;
-                }
+            // 首先尝试查找现有的用户（按用户名）
+            const { data: existingUsers, error: searchError } = await this.supabase
+                .from('users')
+                .select('id, username')
+                .eq('username', username)
+                .limit(1);
+            
+            if (searchError) {
+                console.error('查找用户失败:', searchError);
+                throw searchError;
             }
             
-            if (!userId) {
-                // 创建新用户
-                const username = window.taskStorage?.getUsername() || '小久';
-                const { data, error } = await this.supabase
-                    .from('users')
-                    .insert([{ username: username }])
-                    .select()
-                    .single();
+            if (existingUsers && existingUsers.length > 0) {
+                // 找到现有用户，使用第一个
+                this.currentUser = existingUsers[0];
+                localStorage.setItem('supabase_user_id', this.currentUser.id);
+                console.log('✅ 使用现有用户:', this.currentUser);
+                return this.currentUser;
+            }
+            
+            // 如果没有找到用户，检查是否有任何用户存在
+            const { data: allUsers, error: countError } = await this.supabase
+                .from('users')
+                .select('id, username')
+                .limit(1);
+            
+            if (countError) {
+                console.error('检查用户数量失败:', countError);
+                throw countError;
+            }
+            
+            if (allUsers && allUsers.length > 0) {
+                // 如果已经有用户存在，使用第一个用户
+                this.currentUser = allUsers[0];
+                localStorage.setItem('supabase_user_id', this.currentUser.id);
+                console.log('✅ 使用系统中的第一个用户:', this.currentUser);
                 
-                if (error) {
-                    console.error('创建用户失败:', error);
-                    throw error;
+                // 更新用户名为当前设置的用户名
+                if (this.currentUser.username !== username) {
+                    await this.supabase
+                        .from('users')
+                        .update({ username: username })
+                        .eq('id', this.currentUser.id);
+                    this.currentUser.username = username;
+                    console.log('✅ 已更新用户名为:', username);
                 }
                 
-                userId = data.id;
-                localStorage.setItem('supabase_user_id', userId);
-                this.currentUser = data;
-                console.log('创建新用户成功:', data);
+                return this.currentUser;
             }
+            
+            // 如果没有任何用户，创建第一个用户
+            const { data, error } = await this.supabase
+                .from('users')
+                .insert([{ username: username }])
+                .select()
+                .single();
+            
+            if (error) {
+                console.error('创建用户失败:', error);
+                throw error;
+            }
+            
+            this.currentUser = data;
+            localStorage.setItem('supabase_user_id', this.currentUser.id);
+            console.log('✅ 创建新用户成功:', this.currentUser);
             
             return this.currentUser;
+            
         } catch (error) {
             console.error('用户检查失败:', error);
             return null;

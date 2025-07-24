@@ -11,6 +11,7 @@ class TaskStorage {
     }
 
     // 设置云端同步
+    // 设置云端同步（单用户系统）
     async setupCloudSync() {
         try {
             // 等待Supabase配置初始化
@@ -19,17 +20,27 @@ class TaskStorage {
                 this.cloudSyncEnabled = initResult && window.supabaseConfig.isConfigured;
                 
                 if (this.cloudSyncEnabled) {
-                    // 订阅实时数据变化
-                    window.supabaseConfig.subscribeToChanges((payload) => {
-                        this.handleCloudDataChange(payload);
-                    });
-                    
-                    // 启动时同步一次数据
-                    setTimeout(() => {
-                        this.syncWithCloud();
-                    }, 2000);
-                    
-                    console.log('云端同步已启用');
+                    // 确保使用单用户系统
+                    const user = await window.supabaseConfig.checkUser();
+                    if (user) {
+                        this.currentUserId = user.id;
+                        console.log('✅ 单用户系统已启用，用户ID:', this.currentUserId);
+                        
+                        // 订阅实时数据变化
+                        window.supabaseConfig.subscribeToChanges((payload) => {
+                            this.handleCloudDataChange(payload);
+                        });
+                        
+                        // 启动时同步一次数据
+                        setTimeout(() => {
+                            this.syncWithCloud();
+                        }, 2000);
+                        
+                        console.log('✅ 云端同步已启用（单用户模式）');
+                    } else {
+                        console.warn('用户初始化失败，禁用云端同步');
+                        this.cloudSyncEnabled = false;
+                    }
                 } else {
                     console.log('Supabase未配置，仅使用本地存储');
                 }
