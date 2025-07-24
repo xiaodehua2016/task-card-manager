@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>专注力大挑战 - 小久的任务卡片</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/focus.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="page-title">
+                <button class="back-btn" onclick="goBack()">
+                    <span class="icon">←</span>
+                    <span>返回</span>
+                </button>
+                <h1>⏰ 专注力大挑战</h1>
+            </div>
+        </header>
+
+        <main class="focus-container">
+            <!-- 计时器显示区域 -->
+            <div class="timer-section">
+                <div class="timer-display" id="timer-display">
+                    <div class="time-text" id="time-text">00:00:00</div>
+                    <div class="timer-label">专注时间</div>
+                </div>
+                
+                <!-- 进度环 -->
+                <div class="progress-ring">
+                    <svg class="progress-ring-svg" width="200" height="200">
+                        <circle class="progress-ring-circle-bg" cx="100" cy="100" r="90"></circle>
+                        <circle class="progress-ring-circle" cx="100" cy="100" r="90" id="progress-circle"></circle>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- 控制按钮区域 -->
+            <div class="controls-section">
+                <button class="control-btn start-btn" id="start-stop-btn" onclick="toggleTimer()">
+                    <span class="btn-icon">▶️</span>
+                    <span class="btn-text">开始专注</span>
+                </button>
+                
+                <button class="control-btn reset-btn" id="reset-btn" onclick="resetTimer()">
+                    <span class="btn-icon">🔄</span>
+                    <span class="btn-text">重置</span>
+                </button>
+            </div>
+
+            <!-- 预设时间选择 -->
+            <div class="preset-section">
+                <h3>选择专注时间</h3>
+                <div class="preset-buttons">
+                    <button class="preset-btn" onclick="setPresetTime(5)">5分钟</button>
+                    <button class="preset-btn" onclick="setPresetTime(10)">10分钟</button>
+                    <button class="preset-btn active" onclick="setPresetTime(15)">15分钟</button>
+                    <button class="preset-btn" onclick="setPresetTime(25)">25分钟</button>
+                    <button class="preset-btn" onclick="setPresetTime(30)">30分钟</button>
+                </div>
+            </div>
+
+            <!-- 专注记录 -->
+            <div class="records-section">
+                <h3>今日专注记录</h3>
+                <div class="records-list" id="records-list">
+                    <!-- 专注记录将通过JavaScript动态生成 -->
+                </div>
+                <div class="records-summary" id="records-summary">
+                    <div class="summary-item">
+                        <span class="summary-label">今日总专注时间</span>
+                        <span class="summary-value" id="total-time">0分钟</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">专注次数</span>
+                        <span class="summary-value" id="focus-count">0次</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 专注提示 -->
+            <div class="tips-section">
+                <h3>💡 专注小贴士</h3>
+                <div class="tips-content">
+                    <p>• 找一个安静的环境，远离干扰</p>
+                    <p>• 专注时间内不要看手机或其他设备</p>
+                    <p>• 可以听一些轻柔的背景音乐</p>
+                    <p>• 专注结束后给自己一个小奖励</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 完成庆祝动画 -->
+    <div class="celebration" id="celebration">
+        <div class="celebration-content">
+            <div class="celebration-icon">🎉</div>
+            <div class="celebration-text">专注挑战完成！</div>
+            <div class="celebration-desc">你真棒！坚持了 <span id="completed-time"></span></div>
+        </div>
+    </div>
+
+    <script src="js/storage.js"></script>
+    <script src="js/focus.js"></script>
+</body>
+</html>

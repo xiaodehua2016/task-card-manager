@@ -1,0 +1,27 @@
+{
+  "name": "小久的任务卡片管理",
+  "short_name": "任务卡片",
+  "description": "儿童友好的每日任务管理工具，帮助培养良好习惯",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#a8edea",
+  "theme_color": "#667eea",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png", 
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "productivity", "lifestyle"],
+  "lang": "zh-CN",
+  "dir": "ltr"
+}

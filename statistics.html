@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>完成统计 - 小久的任务卡片</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/statistics.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="page-title">
+                <button class="back-btn" onclick="goBack()">
+                    <span class="icon">←</span>
+                    <span>返回</span>
+                </button>
+                <h1>完成统计</h1>
+            </div>
+            <div class="stats-summary" id="stats-summary">
+                <div class="summary-card">
+                    <div class="summary-number" id="today-completed">0</div>
+                    <div class="summary-label">今日完成</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-number" id="week-average">0%</div>
+                    <div class="summary-label">本周平均</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-number" id="month-total">0</div>
+                    <div class="summary-label">本月总计</div>
+                </div>
+            </div>
+        </header>
+
+        <main class="stats-container">
+            <!-- 时间段选择 -->
+            <div class="time-selector">
+                <button class="time-btn active" data-period="3" onclick="changePeriod(3)">前3天</button>
+                <button class="time-btn" data-period="7" onclick="changePeriod(7)">前1周</button>
+                <button class="time-btn" data-period="30" onclick="changePeriod(30)">近1个月</button>
+            </div>
+
+            <!-- 图表区域 -->
+            <div class="charts-section">
+                <div class="chart-container">
+                    <h3>完成率趋势</h3>
+                    <div class="chart" id="completion-chart">
+                        <!-- 图表将通过JavaScript生成 -->
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <h3>每日完成数量</h3>
+                    <div class="chart" id="daily-chart">
+                        <!-- 图表将通过JavaScript生成 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 详细数据 -->
+            <div class="details-section">
+                <h3>详细数据</h3>
+                <div class="details-table" id="details-table">
+                    <!-- 详细数据表格将通过JavaScript生成 -->
+                </div>
+            </div>
+
+            <!-- 成就展示 -->
+            <div class="achievements-section">
+                <h3>成就徽章</h3>
+                <div class="achievements-grid" id="achievements-grid">
+                    <!-- 成就徽章将通过JavaScript生成 -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/storage.js"></script>
+    <script src="js/statistics.js"></script>
+</body>
+</html>

@@ -1,0 +1,442 @@
+/* 专注力挑战页面样式 */
+.focus-container {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    flex: 1;
+    align-items: center;
+}
+
+/* 计时器显示区域 */
+.timer-section {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.timer-display {
+    position: absolute;
+    z-index: 2;
+    text-align: center;
+}
+
+.time-text {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #2d3748;
+    margin-bottom: 8px;
+    font-family: 'Courier New', monospace;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.timer-label {
+    font-size: 1.1rem;
+    color: #718096;
+    font-weight: 500;
+}
+
+/* 进度环 */
+.progress-ring {
+    position: relative;
+}
+
+.progress-ring-svg {
+    transform: rotate(-90deg);
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+}
+
+.progress-ring-circle-bg {
+    fill: none;
+    stroke: rgba(226, 232, 240, 0.8);
+    stroke-width: 8;
+}
+
+.progress-ring-circle {
+    fill: none;
+    stroke: url(#gradient);
+    stroke-width: 8;
+    stroke-linecap: round;
+    stroke-dasharray: 565.48;
+    stroke-dashoffset: 565.48;
+    transition: stroke-dashoffset 1s ease;
+}
+
+/* 渐变定义 */
+.progress-ring-svg defs {
+    display: none;
+}
+
+.progress-ring::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, #667eea, #764ba2, #667eea);
+    mask: radial-gradient(circle, transparent 82px, black 90px);
+    -webkit-mask: radial-gradient(circle, transparent 82px, black 90px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.progress-ring.active::before {
+    opacity: 1;
+}
+
+/* 控制按钮区域 */
+.controls-section {
+    display: flex;
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.control-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 20px 30px;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    min-width: 120px;
+}
+
+.start-btn {
+    background: linear-gradient(135deg, #48bb78, #38a169);
+    color: white;
+    box-shadow: 0 4px 15px rgba(72, 187, 120, 0.3);
+}
+
+.start-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(72, 187, 120, 0.4);
+}
+
+.start-btn.stop {
+    background: linear-gradient(135deg, #f56565, #e53e3e);
+    box-shadow: 0 4px 15px rgba(245, 101, 101, 0.3);
+}
+
+.start-btn.stop:hover {
+    box-shadow: 0 6px 20px rgba(245, 101, 101, 0.4);
+}
+
+.reset-btn {
+    background: linear-gradient(135deg, #a0aec0, #718096);
+    color: white;
+    box-shadow: 0 4px 15px rgba(160, 174, 192, 0.3);
+}
+
+.reset-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(160, 174, 192, 0.4);
+}
+
+.btn-icon {
+    font-size: 1.5rem;
+}
+
+.btn-text {
+    font-size: 1rem;
+}
+
+/* 预设时间选择 */
+.preset-section {
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    width: 100%;
+    max-width: 500px;
+}
+
+.preset-section h3 {
+    font-size: 1.3rem;
+    color: #2d3748;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.preset-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+}
+
+.preset-btn {
+    padding: 10px 20px;
+    border: 2px solid #e2e8f0;
+    border-radius: 25px;
+    background: white;
+    color: #4a5568;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.preset-btn:hover {
+    border-color: #667eea;
+    color: #667eea;
+    transform: translateY(-1px);
+}
+
+.preset-btn.active {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border-color: #667eea;
+}
+
+/* 专注记录 */
+.records-section {
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    width: 100%;
+    max-width: 500px;
+}
+
+.records-section h3 {
+    font-size: 1.3rem;
+    color: #2d3748;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.records-list {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+}
+
+.record-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: #f7fafc;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    border-left: 4px solid #667eea;
+}
+
+.record-time {
+    font-weight: bold;
+    color: #2d3748;
+}
+
+.record-duration {
+    color: #667eea;
+    font-size: 0.9rem;
+}
+
+.records-summary {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 15px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.summary-item {
+    text-align: center;
+}
+
+.summary-label {
+    display: block;
+    font-size: 0.9rem;
+    color: #718096;
+    margin-bottom: 5px;
+}
+
+.summary-value {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #667eea;
+}
+
+/* 专注提示 */
+.tips-section {
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    width: 100%;
+    max-width: 500px;
+}
+
+.tips-section h3 {
+    font-size: 1.3rem;
+    color: #2d3748;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.tips-content p {
+    margin: 8px 0;
+    color: #4a5568;
+    line-height: 1.6;
+}
+
+/* 完成庆祝动画 */
+.celebration {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.celebration.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.celebration-content {
+    text-align: center;
+    color: white;
+    animation: celebrationBounce 1s ease-in-out;
+}
+
+.celebration-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+}
+
+.celebration-text {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.celebration-desc {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .time-text {
+        font-size: 2.5rem;
+    }
+    
+    .progress-ring-svg {
+        width: 160px;
+        height: 160px;
+    }
+    
+    .progress-ring-circle-bg,
+    .progress-ring-circle {
+        cx: 80;
+        cy: 80;
+        r: 70;
+    }
+    
+    .controls-section {
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .control-btn {
+        width: 200px;
+        padding: 15px 20px;
+    }
+    
+    .preset-buttons {
+        gap: 8px;
+    }
+    
+    .preset-btn {
+        padding: 8px 16px;
+        font-size: 0.85rem;
+    }
+    
+    .records-section,
+    .preset-section,
+    .tips-section {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .time-text {
+        font-size: 2rem;
+    }
+    
+    .progress-ring-svg {
+        width: 140px;
+        height: 140px;
+    }
+    
+    .progress-ring-circle-bg,
+    .progress-ring-circle {
+        cx: 70;
+        cy: 70;
+        r: 60;
+    }
+    
+    .celebration-icon {
+        font-size: 3rem;
+    }
+    
+    .celebration-text {
+        font-size: 1.5rem;
+    }
+    
+    .celebration-desc {
+        font-size: 1rem;
+    }
+}
+
+/* 动画效果 */
+@keyframes celebrationBounce {
+    0% {
+        transform: scale(0.3) rotate(-10deg);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.1) rotate(5deg);
+    }
+    100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+/* 计时器运行时的脉冲效果 */
+.timer-display.running {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}

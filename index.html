@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="儿童友好的每日任务管理工具，帮助培养良好习惯和专注力">
+    <meta name="keywords" content="任务管理,儿童教育,习惯养成,专注力训练">
+    <meta name="author" content="CodeBuddy">
+    <title>小久的任务卡片 - 儿童任务管理工具</title>
+    
+    <!-- PWA支持 -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="任务卡片">
+    
+    <!-- 图标 -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/cards.css">
+    <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部信息区域 -->
+        <header class="header">
+            <div class="date-info">
+                <h1 id="current-date"></h1>
+                <div class="weather-icon">☀️</div>
+            </div>
+            <div class="user-greeting">
+                <h2>你好，<span id="username">小久</span>！</h2>
+                <p id="progress-message" class="progress-message">今天你还没开始任务，该加油喽！</p>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+                <span class="progress-text" id="progress-text">0/8</span>
+            </div>
+            
+            <!-- 徽章显示区域 -->
+            <div class="badges-section" id="badges-section" style="display: none;">
+                <div class="badges-title">🎉 获得徽章</div>
+                <div class="badges-container" id="badges-container">
+                    <!-- 徽章将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </header>
+
+        <!-- 任务卡片区域 -->
+        <main class="tasks-container">
+            <div class="tasks-grid" id="tasks-grid">
+                <!-- 任务卡片将通过JavaScript动态生成 -->
+            </div>
+        </main>
+
+        <!-- 底部导航 -->
+        <footer class="footer">
+            <button class="nav-btn" onclick="openFocusChallenge()">
+                <span class="icon">⏰</span>
+                <span>专注力大挑战</span>
+            </button>
+            <button class="nav-btn" onclick="openEditTasks()">
+                <span class="icon">✏️</span>
+                <span>编辑任务</span>
+            </button>
+            <button class="nav-btn" onclick="openStatistics()">
+                <span class="icon">📊</span>
+                <span>查看统计</span>
+            </button>
+            <button class="nav-btn" onclick="resetTasks()">
+                <span class="icon">🔄</span>
+                <span>重置今日</span>
+            </button>
+        </footer>
+    </div>
+
+    <!-- 庆祝动画 -->
+    <div class="celebration" id="celebration">
+        <div class="celebration-text">太棒了！🎉</div>
+        <div class="confetti"></div>
+    </div>
+
+    <script src="js/storage.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

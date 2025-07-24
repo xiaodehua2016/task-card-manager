@@ -1,0 +1,404 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
+    background: linear-gradient(135deg, #a8edea 0%, #87ceeb 50%, #6fa8dc 100%);
+    min-height: 100vh;
+    color: #333;
+    position: relative;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.2) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(135, 206, 235, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(120, 219, 226, 0.3) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 顶部区域样式 */
+.header {
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 20px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.date-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.date-info h1 {
+    font-size: 2.5rem;
+    color: #4a5568;
+    margin-right: 15px;
+}
+
+.weather-icon {
+    font-size: 2rem;
+    animation: bounce 2s infinite;
+}
+
+.user-greeting {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.user-greeting h2 {
+    font-size: 2rem;
+    color: #2d3748;
+    margin-bottom: 10px;
+}
+
+.user-greeting span {
+    color: #667eea;
+    font-weight: bold;
+}
+
+.progress-message {
+    font-size: 1.2rem;
+    color: #718096;
+    font-weight: 500;
+}
+
+/* 进度条样式 */
+.progress-bar {
+    position: relative;
+    background: #e2e8f0;
+    height: 12px;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-top: 15px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #48bb78, #38a169);
+    border-radius: 6px;
+    transition: width 0.5s ease;
+    width: 0%;
+}
+
+.progress-text {
+    position: absolute;
+    top: -25px;
+    right: 0;
+    font-size: 0.9rem;
+    color: #4a5568;
+    font-weight: bold;
+}
+
+/* 徽章显示区域 */
+.badges-section {
+    margin-top: 20px;
+    padding: 15px;
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 235, 59, 0.1), rgba(255, 255, 255, 0.8));
+    border-radius: 12px;
+    border: 2px solid rgba(255, 215, 0, 0.4);
+    backdrop-filter: blur(15px);
+    box-shadow: 0 5px 20px rgba(255, 215, 0, 0.2);
+    animation: badgeGlow 2s ease-in-out infinite alternate;
+}
+
+.badges-title {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #b8860b;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.badges-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+}
+
+.badge-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    background: linear-gradient(135deg, #ffd700, #ffed4e);
+    color: #744210;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+    animation: badgeBounce 0.6s ease;
+}
+
+.badge-icon {
+    font-size: 1rem;
+}
+
+@keyframes badgeGlow {
+    0% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.3); }
+    100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.6); }
+}
+
+@keyframes badgeBounce {
+    0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+    50% { transform: scale(1.2) rotate(-90deg); }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+/* 触摸设备优化 */
+@media (hover: none) and (pointer: coarse) {
+    .task-card:hover {
+        transform: none;
+    }
+    
+    .task-card:active {
+        transform: scale(0.98);
+    }
+    
+    .complete-btn:hover {
+        transform: none;
+    }
+    
+    .complete-btn:active {
+        transform: scale(0.95);
+    }
+    
+    .nav-btn:hover {
+        transform: none;
+    }
+    
+    .nav-btn:active {
+        transform: scale(0.95);
+    }
+    
+    .back-btn:hover {
+        transform: none;
+    }
+    
+    .back-btn:active {
+        transform: scale(0.95);
+    }
+}
+
+/* 增大触摸目标 */
+@media (max-width: 768px) {
+    .complete-btn {
+        min-height: 44px;
+    }
+    
+    .nav-btn {
+        min-height: 44px;
+    }
+    
+    .back-btn {
+        min-height: 44px;
+    }
+    
+    .time-btn {
+        min-height: 44px;
+    }
+}
+
+/* 任务容器样式 */
+.tasks-container {
+    flex: 1;
+    margin-bottom: 30px;
+}
+
+.tasks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 10px;
+}
+
+/* 底部导航样式 */
+.footer {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 15px;
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.nav-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px 20px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    min-width: 80px;
+}
+
+.nav-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.nav-btn .icon {
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+}
+
+/* 统一返回按钮样式 */
+.back-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 15px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.back-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.back-btn .icon {
+    font-size: 1.2rem;
+    margin-bottom: 0;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+    
+    .header {
+        padding: 20px;
+    }
+    
+    .date-info h1 {
+        font-size: 2rem;
+    }
+    
+    .user-greeting h2 {
+        font-size: 1.5rem;
+    }
+    
+    .progress-message {
+        font-size: 1rem;
+    }
+    
+    .tasks-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .footer {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .nav-btn {
+        flex: 1;
+        min-width: 70px;
+        padding: 12px 15px;
+    }
+    
+    /* 移动端徽章优化 */
+    .badges-section {
+        margin-top: 15px;
+        padding: 12px;
+    }
+    
+    .badges-title {
+        font-size: 1rem;
+        margin-bottom: 8px;
+    }
+    
+    .badge-item {
+        font-size: 0.8rem;
+        padding: 5px 10px;
+    }
+    
+    .badge-icon {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .date-info {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .date-info h1 {
+        font-size: 1.8rem;
+        margin-right: 0;
+    }
+    
+    /* 小屏幕徽章优化 */
+    .badges-container {
+        gap: 6px;
+    }
+    
+    .badge-item {
+        font-size: 0.75rem;
+        padding: 4px 8px;
+    }
+    
+    .badges-title {
+        font-size: 0.9rem;
+    }
+}
+
+/* 平板端优化 */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .tasks-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+    
+    .badges-container {
+        gap: 10px;
+    }
+    
+    .badge-item {
+        font-size: 0.9rem;
+        padding: 8px 14px;
+    }
+}
