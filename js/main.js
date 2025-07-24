@@ -3,6 +3,85 @@ class TaskManager {
     constructor() {
         this.storage = window.taskStorage;
         this.init();
+        this.setupDataSync();
+    }
+
+    // 设置数据同步
+    setupDataSync() {
+        // 注册同步回调
+        this.syncCallback = () => {
+            console.log('检测到数据更新，正在刷新界面...');
+            this.refreshAllData();
+        };
+        
+        this.storage.onSync(this.syncCallback);
+        
+        // 监听自定义数据更新事件
+        window.addEventListener('taskDataUpdated', (e) => {
+            console.log('收到数据更新事件:', e.detail);
+            this.refreshAllData();
+        });
+        
+        // 页面获得焦点时检查更新
+        window.addEventListener('focus', () => {
+            this.storage.checkForUpdates();
+        });
+    }
+
+    // 刷新所有数据
+    refreshAllData() {
+        try {
+            this.updateDateDisplay();
+            this.updateUserGreeting();
+            this.renderTasks();
+            this.updateProgress();
+            this.showSyncNotification();
+        } catch (error) {
+            console.error('刷新数据失败:', error);
+        }
+    }
+
+    // 显示同步通知
+    showSyncNotification() {
+        // 创建一个小的同步提示
+        const notification = document.createElement('div');
+        notification.className = 'sync-notification';
+        notification.innerHTML = '🔄 数据已同步';
+        notification.style.cssText = `
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(72, 187, 120, 0.9);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            z-index: 1000;
+            animation: syncNotificationSlide 2s ease;
+        `;
+
+        // 添加CSS动画
+        if (!document.querySelector('#sync-notification-style')) {
+            const style = document.createElement('style');
+            style.id = 'sync-notification-style';
+            style.textContent = `
+                @keyframes syncNotificationSlide {
+                    0% { transform: translateX(100%); opacity: 0; }
+                    20% { transform: translateX(0); opacity: 1; }
+                    80% { transform: translateX(0); opacity: 1; }
+                    100% { transform: translateX(100%); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 2000);
     }
 
     // 初始化应用
@@ -492,8 +571,17 @@ document.addEventListener('DOMContentLoaded', function() {
 // 处理页面可见性变化，当页面重新可见时更新数据
 document.addEventListener('visibilitychange', function() {
     if (!document.hidden && window.taskManager) {
+        console.log('页面重新可见，检查数据更新...');
+        window.taskManager.storage.checkForUpdates();
         window.taskManager.updateDateDisplay();
         window.taskManager.renderTasks();
         window.taskManager.updateProgress();
+    }
+});
+
+// 页面卸载时清理同步回调
+window.addEventListener('beforeunload', function() {
+    if (window.taskManager && window.taskManager.syncCallback) {
+        window.taskManager.storage.offSync(window.taskManager.syncCallback);
     }
 });

@@ -2,7 +2,188 @@
 class TaskStorage {
     constructor() {
         this.storageKey = 'taskManagerData';
+        this.syncCallbacks = new Set();
+        this.cloudSyncEnabled = false;
+        this.syncInProgress = false;
         this.initializeData();
+        this.setupStorageSync();
+        this.setupCloudSync();
+    }
+
+    // 设置云端同步
+    async setupCloudSync() {
+        try {
+            // 等待Supabase配置初始化
+            if (window.supabaseConfig) {
+                const initResult = await window.supabaseConfig.init();
+                this.cloudSyncEnabled = initResult && window.supabaseConfig.isConfigured;
+                
+                if (this.cloudSyncEnabled) {
+                    // 订阅实时数据变化
+                    window.supabaseConfig.subscribeToChanges((payload) => {
+                        this.handleCloudDataChange(payload);
+                    });
+                    
+                    // 启动时同步一次数据
+                    setTimeout(() => {
+                        this.syncWithCloud();
+                    }, 2000);
+                    
+                    console.log('云端同步已启用');
+                } else {
+                    console.log('Supabase未配置，仅使用本地存储');
+                }
+            }
+        } catch (error) {
+            console.error('云端同步设置失败:', error);
+            this.cloudSyncEnabled = false;
+        }
+    }
+
+    // 处理云端数据变化
+    handleCloudDataChange(payload) {
+        if (payload.eventType === 'UPDATE' || payload.eventType === 'INSERT') {
+            const cloudData = payload.new.data;
+            const localData = this.getData();
+            
+            // 避免循环同步
+            if (cloudData.lastUpdateTime > (localData.lastUpdateTime || 0)) {
+                console.log('检测到云端数据更新，正在同步到本地...');
+                this.mergeCloudData(cloudData);
+            }
+        }
+    }
+
+    // 与云端同步数据
+    async syncWithCloud() {
+        if (!this.cloudSyncEnabled || this.syncInProgress) {
+            return;
+        }
+
+        this.syncInProgress = true;
+        
+        try {
+            const localData = this.getData();
+            const cloudData = await window.supabaseConfig.downloadData();
+            
+            if (!cloudData) {
+                // 云端没有数据，上传本地数据
+                await window.supabaseConfig.uploadData(localData);
+                console.log('本地数据已上传到云端');
+            } else if (cloudData.lastUpdateTime > (localData.lastUpdateTime || 0)) {
+                // 云端数据更新，下载到本地
+                this.mergeCloudData(cloudData);
+                console.log('云端数据已同步到本地');
+            } else if ((localData.lastUpdateTime || 0) > cloudData.lastUpdateTime) {
+                // 本地数据更新，上传到云端
+                await window.supabaseConfig.uploadData(localData);
+                console.log('本地数据已上传到云端');
+            }
+            
+            this.showSyncStatus('success', '数据同步成功');
+        } catch (error) {
+            console.error('云端同步失败:', error);
+            this.showSyncStatus('error', '同步失败: ' + error.message);
+        } finally {
+            this.syncInProgress = false;
+        }
+    }
+
+    // 合并云端数据到本地
+    mergeCloudData(cloudData) {
+        const localData = this.getData();
+        
+        // 智能合并数据
+        const mergedData = {
+            ...localData,
+            ...cloudData,
+            // 合并历史记录
+            completionHistory: {
+                ...localData.completionHistory,
+                ...cloudData.completionHistory
+            },
+            // 合并任务时间记录
+            taskTimes: {
+                ...localData.taskTimes,
+                ...cloudData.taskTimes
+            },
+            // 合并专注记录
+            focusRecords: {
+                ...localData.focusRecords,
+                ...cloudData.focusRecords
+            }
+        };
+        
+        // 保存合并后的数据（不触发云端同步）
+        this.saveDataLocal(mergedData);
+        
+        // 通知界面更新
+        this.notifySyncCallbacks();
+    }
+
+    // 显示同步状态
+    showSyncStatus(type, message) {
+        const event = new CustomEvent('syncStatusUpdate', {
+            detail: { type, message }
+        });
+        window.dispatchEvent(event);
+    }
+
+    // 设置存储同步监听
+    setupStorageSync() {
+        // 监听storage事件，实现多标签页同步
+        window.addEventListener('storage', (e) => {
+            if (e.key === this.storageKey && e.newValue !== e.oldValue) {
+                console.log('检测到其他标签页数据更新，正在同步...');
+                this.notifySyncCallbacks();
+            }
+        });
+
+        // 监听页面可见性变化，当页面重新可见时检查数据更新
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                this.checkForUpdates();
+            }
+        });
+
+        // 定期检查数据更新（每30秒）
+        setInterval(() => {
+            this.checkForUpdates();
+        }, 30000);
+    }
+
+    // 注册同步回调
+    onSync(callback) {
+        this.syncCallbacks.add(callback);
+    }
+
+    // 移除同步回调
+    offSync(callback) {
+        this.syncCallbacks.delete(callback);
+    }
+
+    // 通知所有同步回调
+    notifySyncCallbacks() {
+        this.syncCallbacks.forEach(callback => {
+            try {
+                callback();
+            } catch (error) {
+                console.error('同步回调执行失败:', error);
+            }
+        });
+    }
+
+    // 检查数据更新
+    checkForUpdates() {
+        const currentData = this.getData();
+        const lastUpdateTime = currentData.lastUpdateTime || 0;
+        const localLastUpdateTime = this.lastKnownUpdateTime || 0;
+
+        if (lastUpdateTime > localLastUpdateTime) {
+            console.log('发现数据更新，正在同步...');
+            this.lastKnownUpdateTime = lastUpdateTime;
+            this.notifySyncCallbacks();
+        }
     }
 
     // 初始化数据
@@ -51,8 +232,14 @@ class TaskStorage {
         if (!data.completionHistory) {
             data.completionHistory = {};
         }
+
+        // 添加最后更新时间
+        if (!data.lastUpdateTime) {
+            data.lastUpdateTime = Date.now();
+        }
         
         this.saveData(data);
+        this.lastKnownUpdateTime = data.lastUpdateTime;
     }
 
     // 获取所有数据
@@ -66,15 +253,74 @@ class TaskStorage {
         }
     }
 
-    // 保存数据
+    // 保存数据（添加时间戳）
     saveData(data) {
         try {
+            // 更新时间戳
+            data.lastUpdateTime = Date.now();
+            data.lastModifiedBy = this.getClientId();
+            
             localStorage.setItem(this.storageKey, JSON.stringify(data));
+            this.lastKnownUpdateTime = data.lastUpdateTime;
+            
+            // 触发自定义事件，通知当前页面的其他组件
+            window.dispatchEvent(new CustomEvent('taskDataUpdated', {
+                detail: { timestamp: data.lastUpdateTime }
+            }));
+            
+            // 如果启用了云端同步，上传到云端
+            if (this.cloudSyncEnabled && !this.syncInProgress) {
+                this.uploadToCloud(data);
+            }
+            
             return true;
         } catch (error) {
             console.error('保存数据失败:', error);
             return false;
         }
+    }
+
+    // 仅保存到本地（不触发云端同步）
+    saveDataLocal(data) {
+        try {
+            localStorage.setItem(this.storageKey, JSON.stringify(data));
+            this.lastKnownUpdateTime = data.lastUpdateTime;
+            
+            window.dispatchEvent(new CustomEvent('taskDataUpdated', {
+                detail: { timestamp: data.lastUpdateTime }
+            }));
+            
+            return true;
+        } catch (error) {
+            console.error('本地保存数据失败:', error);
+            return false;
+        }
+    }
+
+    // 上传数据到云端
+    async uploadToCloud(data) {
+        if (!this.cloudSyncEnabled || !window.supabaseConfig?.isConfigured) {
+            return;
+        }
+        
+        try {
+            const result = await window.supabaseConfig.uploadData(data);
+            if (result) {
+                console.log('数据已成功上传到云端');
+            }
+        } catch (error) {
+            console.error('上传到云端失败:', error);
+            // 显示用户友好的错误提示
+            this.showSyncStatus('error', '云端同步失败，数据已保存到本地');
+        }
+    }
+
+    // 获取客户端ID
+    getClientId() {
+        if (!this.clientId) {
+            this.clientId = 'client_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+        return this.clientId;
     }
 
     // 获取用户名
@@ -340,7 +586,6 @@ class TaskStorage {
         return data.taskTimes[today];
     }
 
-    // 获取任务时间历史记录
     // 获取任务时间历史记录
     getTaskTimeHistory(days = 7) {
         const data = this.getData();
