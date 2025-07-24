@@ -1,53 +1,190 @@
 // 数据存储管理模块
+// 数据存储管理模块
 class TaskStorage {
     constructor() {
         this.storageKey = 'taskManagerData';
         this.syncCallbacks = new Set();
         this.cloudSyncEnabled = false;
         this.syncInProgress = false;
+        this.currentUserId = null;
         this.initializeData();
         this.setupStorageSync();
-        this.setupCloudSync();
+        
+        // 延迟初始化云端同步，确保所有依赖都已加载
+        setTimeout(() => {
+            this.setupCloudSync();
+        }, 1000);
     }
 
-    // 设置云端同步
+    // 设置云端同步（单用户系统）
     // 设置云端同步（单用户系统）
     async setupCloudSync() {
         try {
             // 等待Supabase配置初始化
-            if (window.supabaseConfig) {
-                const initResult = await window.supabaseConfig.init();
-                this.cloudSyncEnabled = initResult && window.supabaseConfig.isConfigured;
-                
-                if (this.cloudSyncEnabled) {
-                    // 确保使用单用户系统
-                    const user = await window.supabaseConfig.checkUser();
-                    if (user) {
-                        this.currentUserId = user.id;
-                        console.log('✅ 单用户系统已启用，用户ID:', this.currentUserId);
-                        
-                        // 订阅实时数据变化
-                        window.supabaseConfig.subscribeToChanges((payload) => {
-                            this.handleCloudDataChange(payload);
-                        });
-                        
-                        // 启动时同步一次数据
-                        setTimeout(() => {
-                            this.syncWithCloud();
-                        }, 2000);
-                        
-                        console.log('✅ 云端同步已启用（单用户模式）');
-                    } else {
-                        console.warn('用户初始化失败，禁用云端同步');
-                        this.cloudSyncEnabled = false;
-                    }
-                } else {
-                    console.log('Supabase未配置，仅使用本地存储');
-                }
+            if (!window.supabaseConfig) {
+                console.warn('Supabase配置未加载，跳过云端同步设置');
+                return;
             }
+
+            // 等待Supabase初始化完成
+            let retryCount = 0;
+            while (!window.supabaseConfig.isConfigured && retryCount < 10) {
+                await new Promise(resolve => setTimeout(resolve, 500));
+                retryCount++;
+            }
+
+            if (!window.supabaseConfig.isConfigured) {
+                console.warn('Supabase初始化超时，跳过云端同步');
+                return;
+            }
+
+            // 确保使用单用户系统
+            const user = await window.supabaseConfig.checkUser();
+            if (!user) {
+                console.warn('用户检查失败，无法启用云端同步');
+                return;
+            }
+
+            this.currentUserId = user.id;
+            this.cloudSyncEnabled = true;
+            console.log('✅ 单用户系统已启用，用户ID:', this.currentUserId);
+
+            // 设置实时订阅
+            this.setupRealtimeSubscription();
+            
+            // 首次数据同步 - 智能合并
+            await this.performInitialSync();
+            
         } catch (error) {
-            console.error('云端同步设置失败:', error);
+            console.error('设置云端同步失败:', error);
             this.cloudSyncEnabled = false;
+        }
+    }
+
+    // 设置实时订阅
+    setupRealtimeSubscription() {
+        if (!this.cloudSyncEnabled || !window.supabaseConfig) {
+            return;
+        }
+
+        this.subscription = window.supabaseConfig.subscribeToChanges((cloudData) => {
+            this.handleCloudDataChange(cloudData);
+        });
+    }
+
+    // 执行初始同步 - 智能合并本地和云端数据
+    async performInitialSync() {
+        if (!this.cloudSyncEnabled) return;
+
+        try {
+            console.log('🔄 开始初始数据同步...');
+            
+            // 下载云端数据
+            const cloudData = await window.supabaseConfig.downloadData();
+            const localData = this.getAllData();
+            
+            if (!cloudData) {
+                // 云端没有数据，上传本地数据
+                console.log('📤 云端无数据，上传本地数据');
+                await this.syncToCloud();
+                return;
+            }
+            
+            // 比较时间戳，决定使用哪个数据
+            const cloudTime = cloudData.lastUpdateTime || 0;
+            const localTime = localData.lastUpdateTime || 0;
+            
+            if (cloudTime > localTime) {
+                // 云端数据更新，使用云端数据
+                console.log('📥 使用云端数据（更新时间：' + new Date(cloudTime).toLocaleString() + '）');
+                this.loadFromData(cloudData);
+                this.notifyDataUpdate();
+            } else if (localTime > cloudTime) {
+                // 本地数据更新，上传到云端
+                console.log('📤 使用本地数据（更新时间：' + new Date(localTime).toLocaleString() + '）');
+                await this.syncToCloud();
+            } else {
+                // 时间戳相同，进行智能合并
+                console.log('🔄 数据时间戳相同，进行智能合并');
+                const mergedData = this.mergeData(localData, cloudData);
+                this.loadFromData(mergedData);
+                await this.syncToCloud();
+            }
+            
+        } catch (error) {
+            console.error('初始同步失败:', error);
+        }
+    }
+
+    // 从数据对象加载数据
+    loadFromData(data) {
+        try {
+            localStorage.setItem(this.storageKey, JSON.stringify(data));
+            this.lastKnownUpdateTime = data.lastUpdateTime;
+            console.log('✅ 数据已加载到本地存储');
+        } catch (error) {
+            console.error('加载数据失败:', error);
+        }
+    }
+
+    // 获取所有数据（包含完整结构）
+    getAllData() {
+        return this.getData();
+    }
+
+    // 通知数据更新
+    notifyDataUpdate() {
+        this.notifySyncCallbacks();
+        this.refreshPageDisplay();
+    }
+
+    // 智能数据合并
+    mergeData(localData, cloudData) {
+        const merged = { ...localData };
+        
+        // 合并完成历史记录
+        if (cloudData.completionHistory) {
+            merged.completionHistory = {
+                ...merged.completionHistory,
+                ...cloudData.completionHistory
+            };
+        }
+        
+        // 合并任务时间记录
+        if (cloudData.taskTimes) {
+            merged.taskTimes = {
+                ...merged.taskTimes,
+                ...cloudData.taskTimes
+            };
+        }
+        
+        // 合并专注记录
+        if (cloudData.focusRecords) {
+            merged.focusRecords = {
+                ...merged.focusRecords,
+                ...cloudData.focusRecords
+            };
+        }
+        
+        // 使用最新的更新时间
+        merged.lastUpdateTime = Math.max(
+            localData.lastUpdateTime || 0,
+            cloudData.lastUpdateTime || 0
+        );
+        
+        return merged;
+    }
+
+    // 同步到云端
+    async syncToCloud() {
+        if (!this.cloudSyncEnabled) return;
+        
+        try {
+            const data = this.getAllData();
+            await window.supabaseConfig.uploadData(data);
+            console.log('✅ 数据已同步到云端');
+        } catch (error) {
+            console.error('同步到云端失败:', error);
         }
     }
 
