@@ -1,25 +1,68 @@
 // Supabase配置文件
 class SupabaseConfig {
     constructor() {
-        // 从配置文件获取配置，如果没有配置文件则使用默认值
-        if (!window.SUPABASE_CONFIG) {
-            console.warn('未找到Supabase配置文件，请确保config/supabase.js已正确加载');
-            this.supabaseUrl = 'https://your-project-id.supabase.co';
-            this.supabaseKey = 'your-anon-key';
-        } else {
-            this.supabaseUrl = window.SUPABASE_CONFIG.url;
-            this.supabaseKey = window.SUPABASE_CONFIG.anonKey;
-        }
-        
         this.supabase = null;
         this.currentUser = null;
-        this.isConfigured = this.supabaseUrl !== 'https://your-project-id.supabase.co';
+        this.isConfigured = false;
         
-        if (this.isConfigured) {
-            this.init();
-        } else {
-            console.warn('Supabase未配置，将仅使用本地存储');
+        // 动态加载配置
+        this.loadConfig().then(() => {
+            if (this.isConfigured) {
+                this.init();
+            } else {
+                console.warn('Supabase未配置，将仅使用本地存储');
+            }
+        });
+    }
+
+    // 动态加载配置
+    async loadConfig() {
+        console.log('🔄 开始加载Supabase配置...');
+        
+        try {
+            // 方法1: 从Vercel API获取配置
+            console.log('尝试从API加载配置...');
+            const response = await fetch('/api/config', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (response.ok) {
+                const config = await response.json();
+                this.supabaseUrl = config.supabaseUrl;
+                this.supabaseKey = config.supabaseKey;
+                this.isConfigured = true;
+                console.log('✅ 从API加载配置成功');
+                return;
+            } else {
+                console.warn('API配置加载失败，状态码:', response.status);
+            }
+        } catch (error) {
+            console.warn('API配置加载失败:', error.message);
         }
+        
+        try {
+            // 方法2: 从本地配置文件获取（降级方案）
+            if (window.SUPABASE_CONFIG) {
+                console.log('使用本地配置文件...');
+                this.supabaseUrl = window.SUPABASE_CONFIG.url;
+                this.supabaseKey = window.SUPABASE_CONFIG.anonKey;
+                this.isConfigured = true;
+                console.log('✅ 使用本地配置成功');
+                return;
+            }
+        } catch (error) {
+            console.warn('本地配置加载失败:', error.message);
+        }
+        
+        // 方法3: 使用默认配置（最后的降级方案）
+        console.warn('使用默认配置...');
+        this.supabaseUrl = 'https://zjnjqnftcmxygunzbqch.supabase.co';
+        this.supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpqbmpxbmZ0Y214eWd1bnpicWNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMzNjEwNTQsImV4cCI6MjA2ODkzNzA1NH0.6BVJF0oOAENTWusDthRj1IHcwzCmlhqvv1xxK5jYA2Q';
+        this.isConfigured = true;
+        console.log('⚠️ 使用默认配置');
     }
 
     // 初始化Supabase客户端

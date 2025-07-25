@@ -1,0 +1,27 @@
+{
+  "name": "xiaojiu-task-manager",
+  "version": "3.0.6",
+  "description": "小久的任务卡片管理系统 - 儿童友好的多设备云端同步任务管理应用",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo '静态网站，无需构建'",
+    "deploy": "vercel --prod",
+    "preview": "vercel"
+  },
+  "keywords": [
+    "task-management",
+    "children",
+    "productivity",
+    "supabase",
+    "cloud-sync",
+    "pwa"
+  ],
+  "author": "xiaodehua2016",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xiaodehua2016/task-card-manager.git"
+  },
+  "homepage": "https://xiaojiu-task-manager.vercel.app"
+}
