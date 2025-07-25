@@ -106,13 +106,19 @@
         <div id="access-links" class="access-links" style="display: none;">
             <h3>请选择访问方式：</h3>
             <a href="#" id="best-link" class="access-link best">推荐访问地址（最快）</a>
-            <a href="#" id="vercel-link" class="access-link">Vercel部署</a>
+            <a href="#" id="gitee-link" class="access-link">Gitee Pages（国内推荐）</a>
             <a href="#" id="github-link" class="access-link">GitHub Pages</a>
+            <a href="#" id="vercel-link" class="access-link">Vercel部署</a>
         </div>
     </div>
 
     <script>
         const DEPLOYMENT_URLS = [
+            {
+                name: 'Gitee Pages',
+                url: 'https://xiaodehua2016.gitee.io/task-card-manager/',
+                id: 'gitee-link'
+            },
             {
                 name: 'GitHub Pages',
                 url: 'https://xiaodehua2016.github.io/task-card-manager/',
@@ -120,7 +126,7 @@
             },
             {
                 name: 'Vercel部署',
-                url: 'https://xiaojiu-task-manager-3fpxe4j9k-xiaodehuas-projects.vercel.app/',
+                url: 'https://xiaojiu-task-manager.vercel.app/',
                 id: 'vercel-link'
             }
         ];
@@ -179,11 +185,12 @@
                 document.getElementById('best-link').href = bestResult.url;
                 document.getElementById('best-link').innerHTML = `${bestResult.name}（推荐）`;
                 
-                DEPLOYMENT_URLS.forEach(deployment => {
-                    const linkEl = document.getElementById(deployment.id);
-                    linkEl.href = deployment.url;
-                    linkEl.innerHTML = deployment.name;
-                });
+                document.getElementById('gitee-link').href = 'https://xiaodehua2016.gitee.io/task-card-manager/';
+                document.getElementById('gitee-link').innerHTML = 'Gitee Pages';
+                document.getElementById('github-link').href = 'https://xiaodehua2016.github.io/task-card-manager/';
+                document.getElementById('github-link').innerHTML = 'GitHub Pages';
+                document.getElementById('vercel-link').href = 'https://xiaojiu-task-manager.vercel.app/';
+                document.getElementById('vercel-link').innerHTML = 'Vercel部署';
                 
                 linksEl.style.display = 'block';
                 
