@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小久的任务管理系统 - 访问优化</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 500px;
+            margin: 20px;
+        }
+        .logo {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        .testing {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .access-links {
+            margin-top: 30px;
+        }
+        .access-link {
+            display: block;
+            padding: 15px 25px;
+            margin: 10px 0;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        .access-link:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+        .access-link.best {
+            background: #28a745;
+        }
+        .access-link.best:hover {
+            background: #1e7e34;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">📋</div>
+        <h1>小久的任务管理系统</h1>
+        <p class="subtitle">正在为您选择最佳访问方式...</p>
+        
+        <div id="status" class="status testing">
+            <div class="loading"></div>
+            正在测试访问速度...
+        </div>
+        
+        <div id="access-links" class="access-links" style="display: none;">
+            <h3>请选择访问方式：</h3>
+            <a href="#" id="best-link" class="access-link best">推荐访问地址（最快）</a>
+            <a href="#" id="vercel-link" class="access-link">Vercel部署</a>
+            <a href="#" id="github-link" class="access-link">GitHub Pages</a>
+        </div>
+    </div>
+
+    <script>
+        const DEPLOYMENT_URLS = [
+            {
+                name: 'GitHub Pages',
+                url: 'https://xiaodehua2016.github.io/task-card-manager/',
+                id: 'github-link'
+            },
+            {
+                name: 'Vercel部署',
+                url: 'https://xiaojiu-task-manager-3fpxe4j9k-xiaodehuas-projects.vercel.app/',
+                id: 'vercel-link'
+            }
+        ];
+
+        async function testAccessSpeed(url) {
+            const startTime = Date.now();
+            try {
+                const response = await fetch(url, { 
+                    method: 'HEAD',
+                    mode: 'no-cors',
+                    timeout: 5000 
+                });
+                const endTime = Date.now();
+                return {
+                    success: true,
+                    speed: endTime - startTime,
+                    url: url
+                };
+            } catch (error) {
+                return {
+                    success: false,
+                    speed: Infinity,
+                    url: url,
+                    error: error.message
+                };
+            }
+        }
+
+        async function findBestAccess() {
+            const statusEl = document.getElementById('status');
+            const linksEl = document.getElementById('access-links');
+            
+            statusEl.innerHTML = '<div class="loading"></div> 正在测试访问速度...';
+            
+            // 测试所有部署地址
+            const results = await Promise.all(
+                DEPLOYMENT_URLS.map(async (deployment) => {
+                    const result = await testAccessSpeed(deployment.url);
+                    return {
+                        ...deployment,
+                        ...result
+                    };
+                })
+            );
+            
+            // 找到最快的访问地址
+            const workingResults = results.filter(r => r.success);
+            const bestResult = workingResults.sort((a, b) => a.speed - b.speed)[0];
+            
+            // 更新界面
+            if (bestResult) {
+                statusEl.className = 'status success';
+                statusEl.innerHTML = `✅ 找到最佳访问方式！响应时间: ${bestResult.speed}ms`;
+                
+                // 设置链接
+                document.getElementById('best-link').href = bestResult.url;
+                document.getElementById('best-link').innerHTML = `${bestResult.name}（推荐）`;
+                
+                DEPLOYMENT_URLS.forEach(deployment => {
+                    const linkEl = document.getElementById(deployment.id);
+                    linkEl.href = deployment.url;
+                    linkEl.innerHTML = deployment.name;
+                });
+                
+                linksEl.style.display = 'block';
+                
+                // 3秒后自动跳转到最佳地址
+                setTimeout(() => {
+                    window.location.href = bestResult.url;
+                }, 3000);
+                
+            } else {
+                statusEl.className = 'status error';
+                statusEl.innerHTML = '❌ 所有访问地址都无法连接，请检查网络连接';
+                
+                // 显示所有链接让用户手动选择
+                DEPLOYMENT_URLS.forEach(deployment => {
+                    const linkEl = document.getElementById(deployment.id);
+                    linkEl.href = deployment.url;
+                    linkEl.innerHTML = deployment.name + '（手动尝试）';
+                });
+                
+                linksEl.style.display = 'block';
+            }
+        }
+
+        // 页面加载后开始测试
+        window.addEventListener('load', findBestAccess);
+    </script>
+</body>
+</html>
