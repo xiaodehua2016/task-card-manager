@@ -96,7 +96,7 @@
     <div class="container">
         <div class="logo">📋</div>
         <h1>小久的任务管理系统</h1>
-        <p class="subtitle">正在为您选择最佳访问方式...</p>
+        <p class="subtitle">为您提供多个访问地址，选择最快的一个...</p>
         
         <div id="status" class="status testing">
             <div class="loading"></div>
@@ -106,19 +106,16 @@
         <div id="access-links" class="access-links" style="display: none;">
             <h3>请选择访问方式：</h3>
             <a href="#" id="best-link" class="access-link best">推荐访问地址（最快）</a>
-            <a href="#" id="gitee-link" class="access-link">Gitee Pages（国内推荐）</a>
-            <a href="#" id="github-link" class="access-link">GitHub Pages</a>
-            <a href="#" id="vercel-link" class="access-link">Vercel部署</a>
+            <a href="https://xiaodehua2016.github.io/task-card-manager/" id="github-link" class="access-link">GitHub Pages</a>
+            <a href="https://xiaojiu-task-manager.vercel.app/" id="vercel-link" class="access-link">Vercel部署</a>
+            <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 10px; color: #856404;">
+                <strong>注意：</strong>Gitee Pages服务暂停维护中，暂时无法使用。
+            </div>
         </div>
     </div>
 
     <script>
         const DEPLOYMENT_URLS = [
-            {
-                name: 'Gitee Pages',
-                url: 'https://xiaodehua2016.gitee.io/task-card-manager/',
-                id: 'gitee-link'
-            },
             {
                 name: 'GitHub Pages',
                 url: 'https://xiaodehua2016.github.io/task-card-manager/',
