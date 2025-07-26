@@ -20,9 +20,22 @@ $WEB_ROOT = "/www/wwwroot/task-manager"
 $VERSION = "v4.2.1"
 $PACKAGE_NAME = "task-manager-${VERSION}.zip"
 
-Write-Host "${BLUE}=== Task Manager ${VERSION} Server Deployment Script ===${NC}"
-Write-Host "Start time: $(Get-Date)"
-Write-Host ""
+# Create log file with timestamp
+$logTimestamp = Get-Date -Format "yyyyMMdd_HHmmss"
+$logFile = Join-Path -Path $PSScriptRoot -ChildPath "deploy_log_${logTimestamp}.txt"
+
+function Write-Log {
+    param([string]$Message)
+    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    $logMessage = "[$timestamp] $Message"
+    Write-Host $logMessage
+    Add-Content -Path $logFile -Value $logMessage -Encoding UTF8
+}
+
+Write-Log "${BLUE}=== Task Manager ${VERSION} Server Deployment Script ===${NC}"
+Write-Log "Start time: $(Get-Date)"
+Write-Log "Log file: $logFile"
+Write-Log ""
 
 # Ensure we are in project root directory
 $scriptPath = $MyInvocation.MyCommand.Path
