@@ -86,14 +86,56 @@ Write-Host "${GREEN}✓ Temporary directory created successfully${NC}"
 
 # Step 2: Copy files to temporary directory
 Write-Host "`n${YELLOW}[2/7] Copying files to temporary directory...${NC}"
-Get-ChildItem -Path . -Exclude .git, node_modules, .codebuddy, $TEMP_DIR, $PACKAGE_NAME | 
-    Copy-Item -Destination $TEMP_DIR -Recurse -Force
-if (-not $?) {
-    Write-Host "${RED}✗ Failed to copy files${NC}"
+try {
+    # Determine if we're in the deploy directory or project root
+    $scriptPath = $MyInvocation.MyCommand.Path
+    $scriptDir = Split-Path -Parent $scriptPath
+    $isInDeployDir = (Split-Path -Leaf $scriptDir) -eq "deploy"
+    
+    # Get project root directory
+    $projectRoot = if ($isInDeployDir) { (Get-Item -Path "..").FullName } else { (Get-Location).Path }
+    
+    # Get all items except excluded ones from project root
+    $items = Get-ChildItem -Path $projectRoot -Exclude .git, node_modules, .codebuddy, "task-manager-*.zip"
+    
+    # Copy each item individually to avoid "copy item with itself" error
+    foreach ($item in $items) {
+        # Skip the temp_deploy directory itself
+        if ($item.Name -eq "temp_deploy") {
+            continue
+        }
+        
+        $relativePath = $item.FullName.Substring($projectRoot.Length + 1)
+        $targetPath = Join-Path -Path $TEMP_DIR -ChildPath $relativePath
+        
+        if ($item.PSIsContainer) {
+            # For directories, create the directory first
+            New-Item -ItemType Directory -Path $targetPath -Force | Out-Null
+            # Then copy contents if it's not the deploy directory or already contains temp_deploy
+            if ($item.Name -ne "deploy") {
+                Copy-Item -Path "$($item.FullName)\*" -Destination $targetPath -Recurse -Force -ErrorAction Stop
+            } else {
+                # For deploy directory, copy only specific files, not temp_deploy
+                $deployItems = Get-ChildItem -Path $item.FullName -Exclude temp_deploy, "task-manager-*.zip"
+                foreach ($deployItem in $deployItems) {
+                    if ($deployItem.PSIsContainer) {
+                        Copy-Item -Path $deployItem.FullName -Destination $targetPath -Recurse -Force -ErrorAction Stop
+                    } else {
+                        Copy-Item -Path $deployItem.FullName -Destination $targetPath -Force -ErrorAction Stop
+                    }
+                }
+            }
+        } else {
+            # For files, copy directly
+            Copy-Item -Path $item.FullName -Destination $targetPath -Force -ErrorAction Stop
+        }
+    }
+    Write-Host "${GREEN}✓ Files copied successfully${NC}"
+} catch {
+    Write-Host "${RED}✗ Failed to copy files: $_${NC}"
     Remove-Item -Path $TEMP_DIR -Recurse -Force
     exit 1
 }
-Write-Host "${GREEN}✓ Files copied successfully${NC}"
 
 # Step 3: Create ZIP package
 Write-Host "`n${YELLOW}[3/7] Creating deployment package...${NC}"
@@ -126,10 +168,10 @@ if (-not $hasBash -and $hasGitBash) {
 # Create upload script
 $uploadScript = @"
 #!/bin/bash
-sshpass -e scp -o StrictHostKeyChecking=no $PACKAGE_NAME $SERVER_USER@$SERVER_IP:$REMOTE_TMP/
-sshpass -e scp -o StrictHostKeyChecking=no deploy/one-click-deploy.sh $SERVER_USER@$SERVER_IP:$REMOTE_TMP/
-sshpass -e scp -o StrictHostKeyChecking=no deploy/fix-baota-permissions.sh $SERVER_USER@$SERVER_IP:$REMOTE_TMP/
-sshpass -e scp -o StrictHostKeyChecking=no deploy/verify-deployment.sh $SERVER_USER@$SERVER_IP:$REMOTE_TMP/
+sshpass -e scp -o StrictHostKeyChecking=no $PACKAGE_NAME $SERVER_USER@${SERVER_IP}:$REMOTE_TMP/
+sshpass -e scp -o StrictHostKeyChecking=no deploy/one-click-deploy.sh $SERVER_USER@${SERVER_IP}:$REMOTE_TMP/
+sshpass -e scp -o StrictHostKeyChecking=no deploy/fix-baota-permissions.sh $SERVER_USER@${SERVER_IP}:$REMOTE_TMP/
+sshpass -e scp -o StrictHostKeyChecking=no deploy/verify-deployment.sh $SERVER_USER@${SERVER_IP}:$REMOTE_TMP/
 "@
 
 # Save upload script
@@ -157,7 +199,7 @@ Write-Host "`n${YELLOW}[6/7] Executing deployment on server...${NC}"
 # Create deployment script
 $deployScript = @"
 #!/bin/bash
-sshpass -e ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP << 'EOF'
+sshpass -e ssh -o StrictHostKeyChecking=no $SERVER_USER@${SERVER_IP} << 'EOF'
     echo "Connected to server successfully, starting deployment..."
     
     # Set execution permissions
@@ -226,7 +268,7 @@ Write-Host "`n${YELLOW}[7/7] Verifying deployment...${NC}"
 # Create verification script
 $verifyScript = @"
 #!/bin/bash
-sshpass -e ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "$REMOTE_TMP/verify-deployment.sh"
+sshpass -e ssh -o StrictHostKeyChecking=no $SERVER_USER@${SERVER_IP} "$REMOTE_TMP/verify-deployment.sh"
 "@
 
 # Save verification script
@@ -245,7 +287,7 @@ Remove-Item -Path "verify.sh" -Force
 
 if (-not $verifyResult) {
     Write-Host "${RED}✗ Deployment verification failed, please check manually${NC}"
-    Write-Host "${YELLOW}Suggestion: Execute ssh $SERVER_USER@$SERVER_IP '$REMOTE_TMP/fix-baota-permissions.sh'${NC}"
+    Write-Host "${YELLOW}Suggestion: Execute ssh $SERVER_USER@${SERVER_IP} '$REMOTE_TMP/fix-baota-permissions.sh'${NC}"
 } else {
     Write-Host "${GREEN}✓ Deployment verification successful${NC}"
 }
@@ -259,8 +301,8 @@ Write-Host "Backup file: $REMOTE_TMP/$BACKUP_NAME"
 Write-Host "Completion time: $(Get-Date)"
 
 Write-Host "`n${GREEN}Deployment script execution complete!${NC}"
-Write-Host "Please visit http://$SERVER_IP to verify the website is running correctly"
-Write-Host "Please visit http://$SERVER_IP/sync-test.html to test data synchronization functionality"
+Write-Host "Please visit http://${SERVER_IP} to verify the website is running correctly"
+Write-Host "Please visit http://${SERVER_IP}/sync-test.html to test data synchronization functionality"
 
 # Clean up environment variable
 $env:SSHPASS = ""
