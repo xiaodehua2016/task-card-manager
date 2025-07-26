@@ -204,9 +204,44 @@ class DataConsistencyFixer {
                     window.taskManager.refreshAllData();
                 }, 100);
             }
+            
+            // 将修复后的数据同步到服务器
+            this.syncFixedDataToServer();
         }
         
         return result;
+    }
+    
+    // 将修复后的数据同步到服务器
+    async syncFixedDataToServer() {
+        try {
+            const fixedData = this.getData();
+            
+            if (!fixedData) {
+                console.warn('没有数据可同步到服务器');
+                return false;
+            }
+            
+            // 如果存在dataSyncManager，使用它来同步
+            if (window.dataSyncManager && typeof window.dataSyncManager.saveToServer === 'function') {
+                console.log('🔄 正在将修复后的数据同步到服务器...');
+                const result = await window.dataSyncManager.saveToServer(fixedData);
+                
+                if (result) {
+                    console.log('✅ 修复后的数据已同步到服务器');
+                    return true;
+                } else {
+                    console.warn('⚠️ 修复后的数据同步到服务器失败');
+                    return false;
+                }
+            } else {
+                console.warn('⚠️ 数据同步管理器不可用，无法同步到服务器');
+                return false;
+            }
+        } catch (error) {
+            console.error('❌ 同步修复数据到服务器失败:', error);
+            return false;
+        }
     }
 
     // 备份当前数据
@@ -346,7 +381,7 @@ class DataConsistencyFixer {
             focusRecords: {},
             lastUpdateTime: Date.now(),
             resetAt: new Date().toISOString(),
-            version: '4.1.0'
+            version: '4.2.1'
         };
         
         // 初始化今日任务

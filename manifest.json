@@ -23,5 +23,6 @@
   ],
   "categories": ["education", "productivity", "lifestyle"],
   "lang": "zh-CN",
-  "dir": "ltr"
+  "dir": "ltr",
+  "version": "4.2.0"
 }

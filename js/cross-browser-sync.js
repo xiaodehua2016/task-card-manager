@@ -180,6 +180,8 @@ class SimpleFileSync {
         this.checkInterval = 3000; // 3秒检查一次
         this.lastCheckTime = 0;
         this.isChecking = false;
+        this.retryCount = 0;
+        this.maxRetries = 3;
         
         this.init();
     }
@@ -213,19 +215,48 @@ class SimpleFileSync {
             });
 
             if (response.ok) {
-                const serverData = await response.json();
+                const responseData = await response.json();
+                // 检查响应数据结构
+                const serverData = responseData.data || responseData;
                 const localData = this.getLocalData();
                 
                 if (this.shouldUpdate(localData, serverData)) {
                     this.updateLocalData(serverData);
                     this.notifyUpdate();
+                    console.log('✅ 从服务器更新了数据');
+                    this.retryCount = 0; // 重置重试计数
                 }
+            } else {
+                console.warn(`服务器响应错误: ${response.status}`);
+                this.handleSyncError();
             }
         } catch (error) {
             // 文件不存在或网络错误，使用本地数据
-            console.log('使用本地数据模式');
+            console.warn('数据同步失败:', error.message);
+            this.handleSyncError();
         } finally {
             this.isChecking = false;
+        }
+    }
+    
+    // 处理同步错误
+    handleSyncError() {
+        this.retryCount++;
+        if (this.retryCount <= this.maxRetries) {
+            console.log(`使用本地数据模式 (重试 ${this.retryCount}/${this.maxRetries})`);
+            // 如果是第一次失败，尝试保存本地数据到服务器
+            if (this.retryCount === 1) {
+                const localData = this.getLocalData();
+                if (localData) {
+                    setTimeout(() => {
+                        this.saveToServer(localData).catch(err => 
+                            console.warn('保存到服务器失败:', err.message)
+                        );
+                    }, 1000);
+                }
+            }
+        } else {
+            console.error('数据同步失败次数过多，请检查网络连接或服务器状态');
         }
     }
 
@@ -241,12 +272,15 @@ class SimpleFileSync {
 
     // 判断是否应该更新
     shouldUpdate(localData, serverData) {
-        if (!localData || !serverData) return false;
+        if (!localData) return !!serverData;
+        if (!serverData) return false;
         
         const localTime = localData.lastUpdateTime || 0;
         const serverTime = serverData.lastUpdateTime || 0;
         
-        return serverTime > localTime;
+        // 如果服务器时间比本地时间新，或者服务器有serverUpdateTime且比本地新
+        return serverTime > localTime || 
+               (serverData.serverUpdateTime && serverData.serverUpdateTime > localTime);
     }
 
     // 更新本地数据
@@ -265,18 +299,30 @@ class SimpleFileSync {
         }));
     }
 
-    // 保存数据到服务器（通过表单提交）
+    // 保存数据到服务器
     async saveToServer(data) {
         try {
-            const formData = new FormData();
-            formData.append('data', JSON.stringify(data));
+            // 确保数据有最新的时间戳
+            if (!data.lastUpdateTime) {
+                data.lastUpdateTime = Date.now();
+            }
             
-            const response = await fetch('/api/save-data', {
+            const response = await fetch('/api/data-sync.php', {
                 method: 'POST',
-                body: formData
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
             });
             
-            return response.ok;
+            if (response.ok) {
+                const result = await response.json();
+                console.log('✅ 数据已保存到服务器:', result.message);
+                return true;
+            } else {
+                console.warn(`保存到服务器失败: ${response.status}`);
+                return false;
+            }
         } catch (error) {
             console.error('保存到服务器失败:', error);
             return false;

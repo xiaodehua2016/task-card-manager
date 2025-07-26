@@ -93,28 +93,67 @@ else
     fi
 fi
 
-# 4. 自动检测并设置文件权限
+# 4. 自动检测并设置文件权限（宝塔面板优化版）
 echo "🔐 设置文件权限..."
 
 # 检测可用的Web用户
+FINAL_WEB_USER=""
 if id $WEB_USER >/dev/null 2>&1; then
+    FINAL_WEB_USER="$WEB_USER"
     echo "✅ 使用用户: $WEB_USER"
-    chown -R $WEB_USER:$WEB_USER $WEB_ROOT
 elif id www >/dev/null 2>&1; then
+    FINAL_WEB_USER="www"
     echo "✅ 使用用户: www (宝塔默认)"
-    chown -R www:www $WEB_ROOT
 elif id nginx >/dev/null 2>&1; then
+    FINAL_WEB_USER="nginx"
     echo "✅ 使用用户: nginx"
-    chown -R nginx:nginx $WEB_ROOT
 elif id www-data >/dev/null 2>&1; then
+    FINAL_WEB_USER="www-data"
     echo "✅ 使用用户: www-data"
-    chown -R www-data:www-data $WEB_ROOT
 else
+    FINAL_WEB_USER="nobody"
     echo "⚠️ 使用默认用户: nobody"
-    chown -R nobody:nobody $WEB_ROOT
 fi
 
-chmod -R 755 $WEB_ROOT
+# 宝塔面板特殊处理：.user.ini文件权限保护
+if [ "$BAOTA_ENV" = true ] && [ -f "$WEB_ROOT/.user.ini" ]; then
+    echo "🔧 检测到宝塔面板.user.ini文件，进行特殊处理..."
+    
+    # 解除.user.ini文件的不可变属性
+    chattr -i "$WEB_ROOT/.user.ini" 2>/dev/null || echo "  ℹ️ .user.ini文件无不可变属性"
+    
+    # 设置其他文件权限（排除.user.ini）
+    find "$WEB_ROOT" -type f ! -name '.user.ini' -exec chown $FINAL_WEB_USER:$FINAL_WEB_USER {} \; 2>/dev/null || true
+    find "$WEB_ROOT" -type d -exec chown $FINAL_WEB_USER:$FINAL_WEB_USER {} \; 2>/dev/null || true
+    
+    # 单独处理.user.ini文件
+    chown $FINAL_WEB_USER:$FINAL_WEB_USER "$WEB_ROOT/.user.ini" 2>/dev/null || echo "  ⚠️ 跳过.user.ini文件权限设置"
+    
+    # 恢复.user.ini文件的不可变属性（保持宝塔面板安全机制）
+    chattr +i "$WEB_ROOT/.user.ini" 2>/dev/null || echo "  ℹ️ 未设置.user.ini不可变属性"
+    
+    echo "✅ 宝塔面板文件权限设置完成"
+else
+    # 标准权限设置
+    chown -R $FINAL_WEB_USER:$FINAL_WEB_USER $WEB_ROOT 2>/dev/null || {
+        echo "⚠️ 权限设置遇到问题，尝试逐个设置..."
+        find "$WEB_ROOT" -type f -exec chown $FINAL_WEB_USER:$FINAL_WEB_USER {} \; 2>/dev/null || true
+        find "$WEB_ROOT" -type d -exec chown $FINAL_WEB_USER:$FINAL_WEB_USER {} \; 2>/dev/null || true
+    }
+    echo "✅ 标准文件权限设置完成"
+fi
+
+# 设置目录和文件权限
+chmod -R 755 $WEB_ROOT 2>/dev/null || {
+    echo "⚠️ 批量权限设置失败，尝试逐个设置..."
+    find "$WEB_ROOT" -type d -exec chmod 755 {} \; 2>/dev/null || true
+    find "$WEB_ROOT" -type f -exec chmod 644 {} \; 2>/dev/null || true
+}
+
+echo "📊 权限设置结果："
+echo "  目录所有者: $(ls -ld $WEB_ROOT | awk '{print $3":"$4}')"
+echo "  文件数量: $(find $WEB_ROOT -type f | wc -l)"
+echo "  目录数量: $(find $WEB_ROOT -type d | wc -l)"
 
 # 5. 配置Nginx（自动适配宝塔面板和标准环境）
 echo "⚙️ 配置Nginx..."
@@ -221,13 +260,22 @@ if [ -f "/tmp/task-manager-v4.1.0.tar.gz" ]; then
     rm -rf $WEB_ROOT/*
     tar -xzf /tmp/task-manager-v4.1.0.tar.gz
     
-    # 设置正确的权限
-    if id $WEB_USER >/dev/null 2>&1; then
-        chown -R $WEB_USER:$WEB_USER $WEB_ROOT
-    elif id www >/dev/null 2>&1; then
-        chown -R www:www $WEB_ROOT
+    # 设置正确的权限（宝塔面板优化）
+    if [ -f "$WEB_ROOT/.user.ini" ]; then
+        echo "🔧 处理宝塔面板.user.ini文件..."
+        chattr -i "$WEB_ROOT/.user.ini" 2>/dev/null || true
+        find "$WEB_ROOT" -type f ! -name '.user.ini' -exec chown $FINAL_WEB_USER:$FINAL_WEB_USER {} \; 2>/dev/null || true
+        find "$WEB_ROOT" -type d -exec chown $FINAL_WEB_USER:$FINAL_WEB_USER {} \; 2>/dev/null || true
+        chown $FINAL_WEB_USER:$FINAL_WEB_USER "$WEB_ROOT/.user.ini" 2>/dev/null || true
+        chattr +i "$WEB_ROOT/.user.ini" 2>/dev/null || true
     else
-        chown -R nobody:nobody $WEB_ROOT
+        if id $WEB_USER >/dev/null 2>&1; then
+            chown -R $WEB_USER:$WEB_USER $WEB_ROOT
+        elif id www >/dev/null 2>&1; then
+            chown -R www:www $WEB_ROOT
+        else
+            chown -R nobody:nobody $WEB_ROOT
+        fi
     fi
     
     chmod -R 755 $WEB_ROOT

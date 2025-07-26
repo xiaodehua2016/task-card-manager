@@ -18,9 +18,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 $dataFile = __DIR__ . '/../data/shared-tasks.json';
 $dataDir = dirname($dataFile);
 
-// 确保数据目录存在
+// 确保数据目录存在并可写
 if (!is_dir($dataDir)) {
     mkdir($dataDir, 0755, true);
+}
+
+// 确保文件存在且可写
+if (!file_exists($dataFile)) {
+    $defaultData = [
+        'version' => '4.2.1',
+        'lastUpdateTime' => time() * 1000,
+        'serverUpdateTime' => time() * 1000,
+        'username' => '小久',
+        'tasks' => [],
+        'taskTemplates' => [
+            'daily' => []
+        ],
+        'dailyTasks' => [],
+        'completionHistory' => []
+    ];
+    file_put_contents($dataFile, json_encode($defaultData, JSON_PRETTY_PRINT));
+    chmod($dataFile, 0644);
 }
 
 try {
@@ -74,17 +92,26 @@ try {
         $result = file_put_contents($dataFile, json_encode($data, JSON_PRETTY_PRINT));
         
         if ($result !== false) {
+            // 确保文件权限正确
+            chmod($dataFile, 0644);
+            
             echo json_encode([
                 'success' => true,
                 'message' => '数据保存成功',
                 'timestamp' => $data['serverUpdateTime']
             ]);
+            
+            // 记录同步日志
+            error_log(date('[Y-m-d H:i:s]') . " 数据同步成功: " . $_SERVER['REMOTE_ADDR'] . "\n", 3, __DIR__ . '/../data/sync.log');
         } else {
             http_response_code(500);
             echo json_encode([
                 'success' => false,
-                'message' => '数据保存失败'
+                'message' => '数据保存失败: ' . error_get_last()['message']
             ]);
+            
+            // 记录错误日志
+            error_log(date('[Y-m-d H:i:s]') . " 数据保存失败: " . error_get_last()['message'] . "\n", 3, __DIR__ . '/../data/error.log');
         }
         
     } else {

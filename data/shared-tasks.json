@@ -1,0 +1,23 @@
+{
+  "version": "4.2.0",
+  "lastUpdateTime": 1721904000000,
+  "serverUpdateTime": 1721904000000,
+  "username": "小久",
+  "tasks": [],
+  "taskTemplates": {
+    "daily": [
+      { "name": "学而思数感小超市", "type": "daily" },
+      { "name": "斑马思维", "type": "daily" },
+      { "name": "核桃编程（学生端）", "type": "daily" },
+      { "name": "英语阅读", "type": "daily" },
+      { "name": "硬笔写字（30分钟）", "type": "daily" },
+      { "name": "悦乐达打卡/作业", "type": "daily" },
+      { "name": "暑假生活作业", "type": "daily" },
+      { "name": "体育/运动（迪卡侬）", "type": "daily" }
+    ]
+  },
+  "dailyTasks": {},
+  "completionHistory": {},
+  "taskTimes": {},
+  "focusRecords": {}
+}

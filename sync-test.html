@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>跨浏览器数据同步测试</title>
+    <style>
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: #f9f9f9;
+        }
+        .test-section h2 {
+            margin-top: 0;
+            color: #3498db;
+            font-size: 1.2rem;
+        }
+        .test-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        button:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+        .danger {
+            background: #e74c3c;
+        }
+        .danger:hover {
+            background: #c0392b;
+        }
+        .success {
+            background: #2ecc71;
+        }
+        .success:hover {
+            background: #27ae60;
+        }
+        .warning {
+            background: #f39c12;
+        }
+        .warning:hover {
+            background: #d35400;
+        }
+        .result-box {
+            margin-top: 15px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+            background: #95a5a6;
+        }
+        .status-indicator.online {
+            background: #2ecc71;
+        }
+        .status-indicator.offline {
+            background: #e74c3c;
+        }
+        .status-bar {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: #ecf0f1;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .instructions {
+            margin-top: 30px;
+            padding: 15px;
+            background: #eaf2f8;
+            border-left: 4px solid #3498db;
+            border-radius: 4px;
+        }
+        .instructions h3 {
+            margin-top: 0;
+            color: #2980b9;
+        }
+        .instructions ol {
+            padding-left: 20px;
+        }
+        .instructions li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>跨浏览器数据同步测试</h1>
+        
+        <div class="status-bar">
+            <div class="status-indicator" id="connection-status"></div>
+            <span id="status-text">检查连接中...</span>
+        </div>
+        
+        <div class="test-section">
+            <h2>1. 数据一致性测试</h2>
+            <p>检查当前浏览器的数据一致性，并修复可能存在的问题。</p>
+            <div class="test-buttons">
+                <button id="check-consistency">检查数据一致性</button>
+                <button id="fix-consistency" class="warning">修复数据一致性</button>
+                <button id="reset-data" class="danger">重置所有数据</button>
+            </div>
+            <div class="result-box" id="consistency-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>2. 数据同步测试</h2>
+            <p>测试与服务器的数据同步功能。</p>
+            <div class="test-buttons">
+                <button id="check-server">检查服务器连接</button>
+                <button id="sync-to-server">同步到服务器</button>
+                <button id="sync-from-server">从服务器同步</button>
+            </div>
+            <div class="result-box" id="sync-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>3. 跨浏览器测试</h2>
+            <p>测试不同浏览器之间的数据同步。</p>
+            <div class="test-buttons">
+                <button id="generate-test-data" class="warning">生成测试数据</button>
+                <button id="run-full-test" class="success">运行完整测试</button>
+            </div>
+            <div class="result-box" id="cross-browser-result"></div>
+        </div>
+        
+        <div class="instructions">
+            <h3>跨浏览器测试步骤</h3>
+            <ol>
+                <li>在第一个浏览器中点击"生成测试数据"，然后点击"同步到服务器"</li>
+                <li>打开第二个浏览器（或隐私窗口），访问相同的页面</li>
+                <li>在第二个浏览器中点击"从服务器同步"</li>
+                <li>检查两个浏览器中的数据是否一致</li>
+                <li>在任一浏览器中修改数据并同步，然后在另一浏览器中检查更新</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- 加载必要的脚本 -->
+    <script src="js/simple-storage.js"></script>
+    <script src="js/cross-browser-sync.js"></script>
+    <script src="js/data-consistency-fix.js"></script>
+    <script src="js/sync-test.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 状态指示器
+            const connectionStatus = document.getElementById('connection-status');
+            const statusText = document.getElementById('status-text');
+            
+            // 结果显示区域
+            const consistencyResult = document.getElementById('consistency-result');
+            const syncResult = document.getElementById('sync-result');
+            const crossBrowserResult = document.getElementById('cross-browser-result');
+            
+            // 检查连接状态
+            async function checkConnection() {
+                try {
+                    const response = await fetch('/api/data-sync.php?test=1', {
+                        method: 'GET',
+                        cache: 'no-cache'
+                    });
+                    
+                    if (response.ok) {
+                        connectionStatus.classList.add('online');
+                        statusText.textContent = '服务器连接正常';
+                        return true;
+                    } else {
+                        connectionStatus.classList.add('offline');
+                        statusText.textContent = `服务器连接失败: ${response.status}`;
+                        return false;
+                    }
+                } catch (error) {
+                    connectionStatus.classList.add('offline');
+                    statusText.textContent = `服务器连接错误: ${error.message}`;
+                    return false;
+                }
+            }
+            
+            // 显示结果
+            function showResult(element, result, isError = false) {
+                element.textContent = typeof result === 'object' ? 
+                    JSON.stringify(result, null, 2) : result;
+                    
+                element.style.color = isError ? '#e74c3c' : '#2c3e50';
+                element.scrollTop = element.scrollHeight;
+            }
+            
+            // 按钮事件处理
+            document.getElementById('check-consistency').addEventListener('click', function() {
+                try {
+                    const result = window.dataFixer.diagnoseDataIssues();
+                    showResult(consistencyResult, result);
+                } catch (error) {
+                    showResult(consistencyResult, `错误: ${error.message}`, true);
+                }
+            });
+            
+            document.getElementById('fix-consistency').addEventListener('click', function() {
+                try {
+                    const result = window.dataFixer.fixDataConsistency();
+                    showResult(consistencyResult, result);
+                } catch (error) {
+                    showResult(consistencyResult, `错误: ${error.message}`, true);
+                }
+            });
+            
+            document.getElementById('reset-data').addEventListener('click', function() {
+                if (confirm('确定要重置所有数据吗？这将清除所有历史记录。')) {
+                    try {
+                        const result = window.dataFixer.resetAndCleanData();
+                        showResult(consistencyResult, result);
+                    } catch (error) {
+                        showResult(consistencyResult, `错误: ${error.message}`, true);
+                    }
+                }
+            });
+            
+            document.getElementById('check-server').addEventListener('click', async function() {
+                try {
+                    const connected = await checkConnection();
+                    showResult(syncResult, {
+                        connected,
+                        message: connected ? '服务器连接正常' : '服务器连接失败',
+                        time: new Date().toLocaleTimeString()
+                    });
+                } catch (error) {
+                    showResult(syncResult, `错误: ${error.message}`, true);
+                }
+            });
+            
+            document.getElementById('sync-to-server').addEventListener('click', async function() {
+                try {
+                    const data = window.taskStorage.getData();
+                    data.syncTest = {
+                        browser: navigator.userAgent,
+                        time: new Date().toISOString()
+                    };
+                    
+                    const result = await window.dataSyncManager.saveToServer(data);
+                    showResult(syncResult, {
+                        success: result,
+                        message: result ? '数据已同步到服务器' : '同步到服务器失败',
+                        time: new Date().toLocaleTimeString()
+                    });
+                } catch (error) {
+                    showResult(syncResult, `错误: ${error.message}`, true);
+                }
+            });
+            
+            document.getElementById('sync-from-server').addEventListener('click', async function() {
+                try {
+                    await window.dataSyncManager.checkForUpdates();
+                    
+                    // 获取最新数据
+                    const data = window.taskStorage.getData();
+                    
+                    showResult(syncResult, {
+                        success: true,
+                        message: '已从服务器同步数据',
+                        data: {
+                            lastUpdateTime: data.lastUpdateTime ? new Date(data.lastUpdateTime).toLocaleString() : '未知',
+                            syncTest: data.syncTest || '无同步测试数据'
+                        },
+                        time: new Date().toLocaleTimeString()
+                    });
+                } catch (error) {
+                    showResult(syncResult, `错误: ${error.message}`, true);
+                }
+            });
+            
+            document.getElementById('generate-test-data').addEventListener('click', function() {
+                try {
+                    // 生成随机测试数据
+                    const testId = 'test_' + Date.now();
+                    const data = window.taskStorage.getData();
+                    
+                    data.testData = {
+                        id: testId,
+                        value: Math.random().toString(36).substring(2, 15),
+                        browser: navigator.userAgent,
+                        time: new Date().toISOString()
+                    };
+                    
+                    window.taskStorage.saveData(data);
+                    
+                    showResult(crossBrowserResult, {
+                        success: true,
+                        message: '已生成测试数据',
+                        testData: data.testData,
+                        time: new Date().toLocaleTimeString()
+                    });
+                } catch (error) {
+                    showResult(crossBrowserResult, `错误: ${error.message}`, true);
+                }
+            });
+            
+            document.getElementById('run-full-test').addEventListener('click', async function() {
+                try {
+                    const button = this;
+                    button.disabled = true;
+                    button.textContent = '测试中...';
+                    
+                    await window.syncTester.runFullTest();
+                    const result = window.syncTester.testResults;
+                    
+                    showResult(crossBrowserResult, {
+                        success: result.every(r => r.success),
+                        results: result,
+                        summary: window.syncTester.showTestSummary(),
+                        time: new Date().toLocaleTimeString()
+                    });
+                    
+                    button.disabled = false;
+                    button.textContent = '运行完整测试';
+                } catch (error) {
+                    showResult(crossBrowserResult, `错误: ${error.message}`, true);
+                    this.disabled = false;
+                    this.textContent = '运行完整测试';
+                }
+            });
+            
+            // 初始化
+            checkConnection();
+        });
+    </script>
+</body>
+</html>
