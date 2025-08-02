@@ -232,6 +232,20 @@ if %errorlevel% neq 0 (
         echo   2. 是否有推送权限
         echo   3. 网络连接是否正常
         echo.
+        echo 📋 手动推送代码到远程仓库的命令:
+        echo.
+        echo   # 推送到GitHub (origin):
+        echo   git push -u origin main
+        echo.
+        echo   # 推送到Gitee:
+        echo   git push -u gitee main
+        echo.
+        echo   # 推送到Coding:
+        echo   git push -u coding main
+        echo.
+        echo   # 强制推送(谨慎使用):
+        echo   git push -f 远程仓库名 main
+        echo.
         echo ✅ 本地Git部署已完成
     ) else (
         echo ✅ 推送到远程仓库成功 >> "%LOG_FILE%"

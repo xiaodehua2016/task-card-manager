@@ -75,3 +75,24 @@ warning: in the working copy of 'deploy/logs/git_deploy_log_20250802_201016.txt'
 尝试创建初始提交... 
 [main b2f1355] 📝 初始提交
  1 file changed, 1 insertion(+), 210 deletions(-)
+warning: in the working copy of 'deploy/logs/git_deploy_log_20250802_201016.txt', LF will be replaced by CRLF the next time Git touches it
+[main e19a50b] ✨ 更新任务管理系统到v4.2.2.2版本
+ 2 files changed, 19 insertions(+)
+当前分支: main 
+coding	https://e.coding.net/xiaodehua2016/task-card-manager.git (fetch)
+coding	https://e.coding.net/xiaodehua2016/task-card-manager.git (push)
+gitee	git@gitee.com:xiaodehua2016/task-card-manager.git (fetch)
+gitee	git@gitee.com:xiaodehua2016/task-card-manager.git (push)
+netlify	https://github.com/xiaodehua2016/task-card-manager.git (fetch)
+netlify	https://github.com/xiaodehua2016/task-card-manager.git (push)
+origin	https://github.com/xiaodehua2016/task-card-manager (fetch)
+origin	https://github.com/xiaodehua2016/task-card-manager (push)
+推送到远程仓库... 
+fatal: unable to access 'https://github.com/xiaodehua2016/task-card-manager/': Failed to connect to github.com port 443 after 21100 ms: Could not connect to server
+✅ 推送到远程仓库成功 
+部署结束时间: 2025-08-02 20:10:42.08 
+======================================== 
+部署完成，状态码: 128 
+错误代码: 128 
+部署结束时间: 2025-08-02 20:10:46.71 
+======================================== 

@@ -25,3 +25,49 @@
 复制核心文件...
 
 🚀 开始Git部署...
+[main 2c74b27] ✨ 更新任务管理系统到v4.2.2.2版本
+ 17 files changed, 1083 insertions(+)
+ create mode 100644 "deploy/Git\351\203\250\347\275\262-v4.2.2.2.bat"
+ create mode 100644 deploy/deploy-v4.2.2.2.ps1
+ rename "deploy/Git\351\203\250\347\275\262-v4.2.2.1.1.bat" => "deploy/history/Git\351\203\250\347\275\262-v4.2.2.1.1.bat" (100%)
+ rename "deploy/Git\351\203\250\347\275\262-v4.2.2.1.bat" => "deploy/history/Git\351\203\250\347\275\262-v4.2.2.1.bat" (100%)
+ create mode 100644 "deploy/history/Git\351\203\250\347\275\262-v4.2.3.bat"
+ rename deploy/{ => history}/git-deploy-v4.2.2.1-simple.ps1 (100%)
+ rename deploy/{ => history}/git-deploy-v4.2.2.1.ps1 (100%)
+ rename "deploy/\344\270\200\351\224\256\351\203\250\347\275\262-v4.2.2.1.bat" => "deploy/history/\344\270\200\351\224\256\351\203\250\347\275\262-v4.2.2.1.bat" (100%)
+ create mode 100644 deploy/logs/deploy_log_20250802_195236.txt
+ create mode 100644 deploy/logs/deploy_log_20250802_200742.txt
+ create mode 100644 deploy/logs/deploy_log_20250802_201014.txt
+ create mode 100644 deploy/logs/git_deploy_log_20250802_201016.txt
+ create mode 100644 "deploy/\344\270\200\351\224\256\351\203\250\347\275\262-v4.2.2.2.bat"
+ create mode 100644 "deploy/\351\203\250\347\275\262\345\210\260\346\234\215\345\212\241\345\231\250-v4.2.2.2.bat"
+ create mode 100644 task-manager-v4.2.2.2-complete.zip
+'🔄' is not recognized as an internal or external command,
+operable program or batch file.
+'-' is not recognized as an internal or external command,
+operable program or batch file.
+'-' is not recognized as an internal or external command,
+operable program or batch file.
+'-' is not recognized as an internal or external command,
+operable program or batch file.
+'🛠️' is not recognized as an internal or external command,
+operable program or batch file.
+'-' is not recognized as an internal or external command,
+operable program or batch file.
+'-' is not recognized as an internal or external command,
+operable program or batch file.
+'-' is not recognized as an internal or external command,
+operable program or batch file.
+'📊' is not recognized as an internal or external command,
+operable program or batch file.
+'-' is not recognized as an internal or external command,
+operable program or batch file.
+'-' is not recognized as an internal or external command,
+operable program or batch file.
+The filename, directory name, or volume label syntax is incorrect.
+
+✅ Git部署完成！
+
+
+📝 完整日志已保存到: C:\AA\codebuddy\1\task-card-manager\deploy\logs\git_deploy_log_20250802_201016.txt
+Press any key to continue . . . 
