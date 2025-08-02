@@ -166,23 +166,7 @@ git add . >> "%LOG_FILE%" 2>&1
 
 REM 提交更改
 echo 提交更改到Git... >> "%LOG_FILE%"
-git commit -m "✨ 更新任务管理系统到v4.2.3版本
-
-🔄 同步功能增强:
-- 修复跨浏览器数据同步问题
-- 优化实时数据同步机制
-- 增强数据合并算法
-- 提高同步频率和稳定性
-
-🛠️ 部署改进:
-- 增强日志记录功能
-- 添加Git部署支持
-- 简化部署流程
-
-📊 其他改进:
-- 优化用户界面
-- 提高系统稳定性
-- 完善错误处理机制" >> "%LOG_FILE%" 2>&1
+git commit -m "更新任务管理系统到v4.2.3版本 - 同步功能增强和部署改进" >> "%LOG_FILE%" 2>&1
 
 REM 检查提交是否成功
 if %errorlevel% neq 0 (
@@ -248,11 +232,11 @@ if %errorlevel% neq 0 (
         echo   git push -f 远程仓库名 main
         echo.
         echo ✅ 本地Git部署已完成
-    ) else {
+    ) else (
         echo ✅ 推送到远程仓库成功 >> "%LOG_FILE%"
         echo.
         echo ✅ Git部署完成！
-    }
+    )
 )
 
 REM 部署结束
