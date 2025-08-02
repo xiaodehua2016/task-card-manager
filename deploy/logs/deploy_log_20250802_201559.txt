@@ -20,3 +20,35 @@
 
 📝 日志将保存到: C:\AA\codebuddy\1\task-card-manager\deploy\logs\git_deploy_log_20250802_201600.txt
 
+
+📦 正在创建部署包...
+复制核心文件...
+
+🚀 开始Git部署...
+[main b13a731] ✨ 更新任务管理系统到v4.2.2.2版本
+ 4 files changed, 106 insertions(+)
+ create mode 100644 deploy/logs/deploy_log_20250802_201559.txt
+ create mode 100644 deploy/logs/git_deploy_log_20250802_201600.txt
+'🔄' is not recognized as an internal or external command,
+operable program or batch file.
+'-' is not recognized as an internal or external command,
+operable program or batch file.
+'-' is not recognized as an internal or external command,
+operable program or batch file.
+'-' is not recognized as an internal or external command,
+operable program or batch file.
+'🛠️' is not recognized as an internal or external command,
+operable program or batch file.
+'-' is not recognized as an internal or external command,
+operable program or batch file.
+'-' is not recognized as an internal or external command,
+operable program or batch file.
+'-' is not recognized as an internal or external command,
+operable program or batch file.
+'📊' is not recognized as an internal or external command,
+operable program or batch file.
+'-' is not recognized as an internal or external command,
+operable program or batch file.
+'-' is not recognized as an internal or external command,
+operable program or batch file.
+The filename, directory name, or volume label syntax is incorrect.

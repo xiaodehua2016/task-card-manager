@@ -68,3 +68,20 @@ data\shared-tasks.json
 ✅ 部署包创建成功: task-manager-v4.2.2.2-complete.zip 
 📊 包大小: 100695 字节 
 开始Git部署... 
+warning: in the working copy of 'deploy/logs/deploy_log_20250802_201508.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'deploy/logs/git_deploy_log_20250802_201509.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'deploy/logs/git_deploy_log_20250802_201600.txt', LF will be replaced by CRLF the next time Git touches it
+提交更改到Git... 
+❌ Git提交失败 
+尝试创建初始提交... 
+On branch main
+Your branch is ahead of 'origin/main' by 6 commits.
+  (use "git push" to publish your local commits)
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   deploy/logs/deploy_log_20250802_201559.txt
+	modified:   deploy/logs/git_deploy_log_20250802_201600.txt
+
+no changes added to commit (use "git add" and/or "git commit -a")
