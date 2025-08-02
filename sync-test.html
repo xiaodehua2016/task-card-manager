@@ -3,372 +3,314 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>跨浏览器数据同步测试</title>
+    <title>数据同步测试工具</title>
     <style>
         body {
-            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-            color: #333;
-        }
-        .container {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             max-width: 800px;
             margin: 0 auto;
-            background: white;
             padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            background: #f5f7fa;
         }
-        h1 {
-            color: #2c3e50;
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+        }
+        .header {
             text-align: center;
             margin-bottom: 30px;
         }
-        .test-section {
-            margin-bottom: 30px;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            background: #f9f9f9;
+        .status-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+            border-left: 4px solid #007bff;
         }
-        .test-section h2 {
-            margin-top: 0;
-            color: #3498db;
-            font-size: 1.2rem;
-        }
-        .test-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        button {
-            background: #3498db;
+        .status-card.success { border-left-color: #28a745; }
+        .status-card.warning { border-left-color: #ffc107; }
+        .status-card.error { border-left-color: #dc3545; }
+        .btn {
+            background: #007bff;
             color: white;
             border: none;
-            border-radius: 4px;
-            padding: 10px 15px;
-            font-size: 14px;
+            padding: 12px 24px;
+            border-radius: 6px;
             cursor: pointer;
-            transition: background 0.3s;
+            margin: 8px;
+            font-size: 14px;
         }
-        button:hover {
-            background: #2980b9;
-        }
-        button:disabled {
-            background: #95a5a6;
-            cursor: not-allowed;
-        }
-        .danger {
-            background: #e74c3c;
-        }
-        .danger:hover {
-            background: #c0392b;
-        }
-        .success {
-            background: #2ecc71;
-        }
-        .success:hover {
-            background: #27ae60;
-        }
-        .warning {
-            background: #f39c12;
-        }
-        .warning:hover {
-            background: #d35400;
-        }
-        .result-box {
-            margin-top: 15px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            background: white;
-            max-height: 200px;
+        .btn:hover { background: #0056b3; }
+        .btn.success { background: #28a745; }
+        .btn.warning { background: #ffc107; color: #212529; }
+        .btn.danger { background: #dc3545; }
+        .log-area {
+            background: #1e1e1e;
+            color: #f8f8f2;
+            padding: 16px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
             overflow-y: auto;
-            font-family: monospace;
-            white-space: pre-wrap;
+            margin: 16px 0;
         }
-        .status-indicator {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            margin-right: 8px;
-            background: #95a5a6;
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 20px 0;
         }
-        .status-indicator.online {
-            background: #2ecc71;
+        .info-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
         }
-        .status-indicator.offline {
-            background: #e74c3c;
+        .info-label {
+            font-weight: bold;
+            color: #495057;
+            font-size: 12px;
+            text-transform: uppercase;
         }
-        .status-bar {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            background: #ecf0f1;
-            border-radius: 4px;
-            margin-bottom: 20px;
+        .info-value {
+            font-size: 14px;
+            margin-top: 4px;
         }
-        .instructions {
-            margin-top: 30px;
-            padding: 15px;
-            background: #eaf2f8;
-            border-left: 4px solid #3498db;
-            border-radius: 4px;
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: #6c757d;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 12px;
         }
-        .instructions h3 {
-            margin-top: 0;
-            color: #2980b9;
-        }
-        .instructions ol {
-            padding-left: 20px;
-        }
-        .instructions li {
-            margin-bottom: 8px;
+        .back-link:hover {
+            background: #5a6268;
+            color: white;
         }
     </style>
 </head>
 <body>
+    <a href="index.html" class="back-link">← 返回主页</a>
+    
     <div class="container">
-        <h1>跨浏览器数据同步测试</h1>
-        
-        <div class="status-bar">
-            <div class="status-indicator" id="connection-status"></div>
-            <span id="status-text">检查连接中...</span>
+        <div class="header">
+            <h1>🔧 数据同步测试工具</h1>
+            <p>用于诊断和修复跨浏览器数据同步问题</p>
         </div>
-        
-        <div class="test-section">
-            <h2>1. 数据一致性测试</h2>
-            <p>检查当前浏览器的数据一致性，并修复可能存在的问题。</p>
-            <div class="test-buttons">
-                <button id="check-consistency">检查数据一致性</button>
-                <button id="fix-consistency" class="warning">修复数据一致性</button>
-                <button id="reset-data" class="danger">重置所有数据</button>
-            </div>
-            <div class="result-box" id="consistency-result"></div>
+
+        <div class="status-card" id="sync-status">
+            <h3>🔍 同步状态检查</h3>
+            <p>点击下方按钮开始诊断...</p>
         </div>
-        
-        <div class="test-section">
-            <h2>2. 数据同步测试</h2>
-            <p>测试与服务器的数据同步功能。</p>
-            <div class="test-buttons">
-                <button id="check-server">检查服务器连接</button>
-                <button id="sync-to-server">同步到服务器</button>
-                <button id="sync-from-server">从服务器同步</button>
-            </div>
-            <div class="result-box" id="sync-result"></div>
+
+        <div style="text-align: center; margin: 20px 0;">
+            <button class="btn" onclick="runDiagnostic()">🔍 运行诊断</button>
+            <button class="btn success" onclick="forceSync()">🔄 强制同步</button>
+            <button class="btn warning" onclick="cleanupStorage()">🧹 清理存储</button>
+            <button class="btn danger" onclick="resetAllData()">⚠️ 重置数据</button>
         </div>
-        
-        <div class="test-section">
-            <h2>3. 跨浏览器测试</h2>
-            <p>测试不同浏览器之间的数据同步。</p>
-            <div class="test-buttons">
-                <button id="generate-test-data" class="warning">生成测试数据</button>
-                <button id="run-full-test" class="success">运行完整测试</button>
-            </div>
-            <div class="result-box" id="cross-browser-result"></div>
+
+        <div class="info-grid" id="info-grid">
+            <!-- 信息将通过JavaScript填充 -->
         </div>
-        
-        <div class="instructions">
-            <h3>跨浏览器测试步骤</h3>
-            <ol>
-                <li>在第一个浏览器中点击"生成测试数据"，然后点击"同步到服务器"</li>
-                <li>打开第二个浏览器（或隐私窗口），访问相同的页面</li>
-                <li>在第二个浏览器中点击"从服务器同步"</li>
-                <li>检查两个浏览器中的数据是否一致</li>
-                <li>在任一浏览器中修改数据并同步，然后在另一浏览器中检查更新</li>
-            </ol>
+
+        <div class="log-area" id="log-area">
+            <div>等待操作...</div>
+        </div>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <button class="btn" onclick="clearLog()">清空日志</button>
+            <button class="btn" onclick="exportLog()">导出日志</button>
         </div>
     </div>
 
     <!-- 加载必要的脚本 -->
-    <script src="js/simple-storage.js"></script>
     <script src="js/cross-browser-sync.js"></script>
-    <script src="js/data-consistency-fix.js"></script>
-    <script src="js/sync-test.js"></script>
-    
+    <script src="js/sync-diagnostic.js"></script>
+
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // 状态指示器
-            const connectionStatus = document.getElementById('connection-status');
-            const statusText = document.getElementById('status-text');
+        // 日志管理
+        const logArea = document.getElementById('log-area');
+        const originalConsoleLog = console.log;
+        const originalConsoleWarn = console.warn;
+        const originalConsoleError = console.error;
+
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.style.marginBottom = '4px';
             
-            // 结果显示区域
-            const consistencyResult = document.getElementById('consistency-result');
-            const syncResult = document.getElementById('sync-result');
-            const crossBrowserResult = document.getElementById('cross-browser-result');
+            const typeIcon = {
+                'info': 'ℹ️',
+                'success': '✅',
+                'warning': '⚠️',
+                'error': '❌'
+            }[type] || 'ℹ️';
             
-            // 检查连接状态
-            async function checkConnection() {
+            logEntry.innerHTML = `<span style="color: #6c757d;">[${timestamp}]</span> ${typeIcon} ${message}`;
+            logArea.appendChild(logEntry);
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+
+        // 重写console方法以显示在页面上
+        console.log = function(...args) {
+            originalConsoleLog.apply(console, args);
+            addLog(args.join(' '), 'info');
+        };
+
+        console.warn = function(...args) {
+            originalConsoleWarn.apply(console, args);
+            addLog(args.join(' '), 'warning');
+        };
+
+        console.error = function(...args) {
+            originalConsoleError.apply(console, args);
+            addLog(args.join(' '), 'error');
+        };
+
+        // 测试功能
+        async function runDiagnostic() {
+            addLog('开始运行诊断...', 'info');
+            
+            if (window.syncDiagnostic) {
                 try {
-                    const response = await fetch('/api/data-sync.php?test=1', {
-                        method: 'GET',
-                        cache: 'no-cache'
-                    });
-                    
-                    if (response.ok) {
-                        connectionStatus.classList.add('online');
-                        statusText.textContent = '服务器连接正常';
-                        return true;
+                    const results = await window.syncDiagnostic.runFullDiagnostic();
+                    updateStatusCard(results);
+                    updateInfoGrid(results);
+                    addLog('诊断完成', 'success');
+                } catch (error) {
+                    addLog('诊断失败: ' + error.message, 'error');
+                }
+            } else {
+                addLog('诊断工具未加载', 'error');
+            }
+        }
+
+        async function forceSync() {
+            addLog('开始强制同步...', 'info');
+            
+            if (window.dataSyncManager && window.dataSyncManager.forceSync) {
+                try {
+                    const success = await window.dataSyncManager.forceSync();
+                    if (success) {
+                        addLog('强制同步成功', 'success');
+                        setTimeout(runDiagnostic, 1000); // 1秒后重新诊断
                     } else {
-                        connectionStatus.classList.add('offline');
-                        statusText.textContent = `服务器连接失败: ${response.status}`;
-                        return false;
+                        addLog('强制同步失败', 'error');
                     }
                 } catch (error) {
-                    connectionStatus.classList.add('offline');
-                    statusText.textContent = `服务器连接错误: ${error.message}`;
-                    return false;
+                    addLog('强制同步出错: ' + error.message, 'error');
+                }
+            } else {
+                addLog('同步管理器未加载', 'error');
+            }
+        }
+
+        function cleanupStorage() {
+            addLog('开始清理存储...', 'info');
+            
+            if (window.syncDiagnostic) {
+                try {
+                    window.syncDiagnostic.cleanupDuplicateStorage();
+                    addLog('存储清理完成', 'success');
+                    setTimeout(runDiagnostic, 500);
+                } catch (error) {
+                    addLog('存储清理失败: ' + error.message, 'error');
+                }
+            } else {
+                addLog('诊断工具未加载', 'error');
+            }
+        }
+
+        function resetAllData() {
+            if (confirm('⚠️ 确定要重置所有数据吗？这将删除所有本地数据！')) {
+                addLog('开始重置数据...', 'warning');
+                
+                try {
+                    const keys = ['taskManagerData', 'xiaojiu_tasks', 'tasks'];
+                    keys.forEach(key => {
+                        localStorage.removeItem(key);
+                        addLog(`已删除存储键: ${key}`, 'info');
+                    });
+                    
+                    addLog('数据重置完成', 'success');
+                    setTimeout(runDiagnostic, 500);
+                } catch (error) {
+                    addLog('数据重置失败: ' + error.message, 'error');
                 }
             }
+        }
+
+        function clearLog() {
+            logArea.innerHTML = '<div>日志已清空</div>';
+        }
+
+        function exportLog() {
+            const logText = Array.from(logArea.children)
+                .map(child => child.textContent)
+                .join('\n');
             
-            // 显示结果
-            function showResult(element, result, isError = false) {
-                element.textContent = typeof result === 'object' ? 
-                    JSON.stringify(result, null, 2) : result;
-                    
-                element.style.color = isError ? '#e74c3c' : '#2c3e50';
-                element.scrollTop = element.scrollHeight;
-            }
+            const blob = new Blob([logText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `sync-log-${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
             
-            // 按钮事件处理
-            document.getElementById('check-consistency').addEventListener('click', function() {
-                try {
-                    const result = window.dataFixer.diagnoseDataIssues();
-                    showResult(consistencyResult, result);
-                } catch (error) {
-                    showResult(consistencyResult, `错误: ${error.message}`, true);
-                }
-            });
+            addLog('日志已导出', 'success');
+        }
+
+        function updateStatusCard(results) {
+            const statusCard = document.getElementById('sync-status');
+            const level = results.syncStatus.level;
+            const message = results.syncStatus.message;
             
-            document.getElementById('fix-consistency').addEventListener('click', function() {
-                try {
-                    const result = window.dataFixer.fixDataConsistency();
-                    showResult(consistencyResult, result);
-                } catch (error) {
-                    showResult(consistencyResult, `错误: ${error.message}`, true);
-                }
-            });
+            statusCard.className = `status-card ${level}`;
+            statusCard.innerHTML = `
+                <h3>🔍 同步状态检查</h3>
+                <p><strong>状态:</strong> ${message}</p>
+                <p><strong>检查时间:</strong> ${new Date(results.timestamp).toLocaleString()}</p>
+            `;
+        }
+
+        function updateInfoGrid(results) {
+            const infoGrid = document.getElementById('info-grid');
             
-            document.getElementById('reset-data').addEventListener('click', function() {
-                if (confirm('确定要重置所有数据吗？这将清除所有历史记录。')) {
-                    try {
-                        const result = window.dataFixer.resetAndCleanData();
-                        showResult(consistencyResult, result);
-                    } catch (error) {
-                        showResult(consistencyResult, `错误: ${error.message}`, true);
-                    }
-                }
-            });
-            
-            document.getElementById('check-server').addEventListener('click', async function() {
-                try {
-                    const connected = await checkConnection();
-                    showResult(syncResult, {
-                        connected,
-                        message: connected ? '服务器连接正常' : '服务器连接失败',
-                        time: new Date().toLocaleTimeString()
-                    });
-                } catch (error) {
-                    showResult(syncResult, `错误: ${error.message}`, true);
-                }
-            });
-            
-            document.getElementById('sync-to-server').addEventListener('click', async function() {
-                try {
-                    const data = window.taskStorage.getData();
-                    data.syncTest = {
-                        browser: navigator.userAgent,
-                        time: new Date().toISOString()
-                    };
-                    
-                    const result = await window.dataSyncManager.saveToServer(data);
-                    showResult(syncResult, {
-                        success: result,
-                        message: result ? '数据已同步到服务器' : '同步到服务器失败',
-                        time: new Date().toLocaleTimeString()
-                    });
-                } catch (error) {
-                    showResult(syncResult, `错误: ${error.message}`, true);
-                }
-            });
-            
-            document.getElementById('sync-from-server').addEventListener('click', async function() {
-                try {
-                    await window.dataSyncManager.checkForUpdates();
-                    
-                    // 获取最新数据
-                    const data = window.taskStorage.getData();
-                    
-                    showResult(syncResult, {
-                        success: true,
-                        message: '已从服务器同步数据',
-                        data: {
-                            lastUpdateTime: data.lastUpdateTime ? new Date(data.lastUpdateTime).toLocaleString() : '未知',
-                            syncTest: data.syncTest || '无同步测试数据'
-                        },
-                        time: new Date().toLocaleTimeString()
-                    });
-                } catch (error) {
-                    showResult(syncResult, `错误: ${error.message}`, true);
-                }
-            });
-            
-            document.getElementById('generate-test-data').addEventListener('click', function() {
-                try {
-                    // 生成随机测试数据
-                    const testId = 'test_' + Date.now();
-                    const data = window.taskStorage.getData();
-                    
-                    data.testData = {
-                        id: testId,
-                        value: Math.random().toString(36).substring(2, 15),
-                        browser: navigator.userAgent,
-                        time: new Date().toISOString()
-                    };
-                    
-                    window.taskStorage.saveData(data);
-                    
-                    showResult(crossBrowserResult, {
-                        success: true,
-                        message: '已生成测试数据',
-                        testData: data.testData,
-                        time: new Date().toLocaleTimeString()
-                    });
-                } catch (error) {
-                    showResult(crossBrowserResult, `错误: ${error.message}`, true);
-                }
-            });
-            
-            document.getElementById('run-full-test').addEventListener('click', async function() {
-                try {
-                    const button = this;
-                    button.disabled = true;
-                    button.textContent = '测试中...';
-                    
-                    await window.syncTester.runFullTest();
-                    const result = window.syncTester.testResults;
-                    
-                    showResult(crossBrowserResult, {
-                        success: result.every(r => r.success),
-                        results: result,
-                        summary: window.syncTester.showTestSummary(),
-                        time: new Date().toLocaleTimeString()
-                    });
-                    
-                    button.disabled = false;
-                    button.textContent = '运行完整测试';
-                } catch (error) {
-                    showResult(crossBrowserResult, `错误: ${error.message}`, true);
-                    this.disabled = false;
-                    this.textContent = '运行完整测试';
-                }
-            });
-            
-            // 初始化
-            checkConnection();
+            infoGrid.innerHTML = `
+                <div class="info-item">
+                    <div class="info-label">本地数据</div>
+                    <div class="info-value">${results.localData.available ? '✅ 可用' : '❌ 不可用'}</div>
+                    <div class="info-value">存储键: ${results.localData.keys.length}</div>
+                    <div class="info-value">大小: ${Math.round(results.localData.dataSize / 1024)}KB</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">服务器数据</div>
+                    <div class="info-value">${results.serverData.accessible ? '✅ 可访问' : '❌ 不可访问'}</div>
+                    <div class="info-value">${results.serverData.available ? '✅ 有数据' : '❌ 无数据'}</div>
+                    ${results.serverData.error ? `<div class="info-value" style="color: #dc3545;">错误: ${results.serverData.error}</div>` : ''}
+                </div>
+                <div class="info-item">
+                    <div class="info-label">时间差</div>
+                    <div class="info-value">${Math.round(results.syncStatus.timeDiff / 1000)}秒</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">修复建议</div>
+                    <div class="info-value">${results.recommendations.length}个建议</div>
+                </div>
+            `;
+        }
+
+        // 页面加载完成后自动运行诊断
+        window.addEventListener('load', () => {
+            addLog('页面加载完成', 'success');
+            setTimeout(runDiagnostic, 1000);
         });
     </script>
 </body>

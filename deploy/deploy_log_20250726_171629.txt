@@ -1,0 +1,52 @@
+﻿[2025-07-26 17:16:30] [34m=== Task Manager v4.2.1 Server Deployment Script v2.1 ===[0m
+[2025-07-26 17:16:30] Start time: 07/26/2025 17:16:30
+[2025-07-26 17:16:30] Log file: C:\AA\codebuddy\1\task-card-manager\deploy\deploy_log_20250726_171629.txt
+[2025-07-26 17:16:30] 
+[2025-07-26 17:16:30] Working directory: C:\AA\codebuddy\1\task-card-manager
+[2025-07-26 17:16:30] [33m[1/5] Creating deployment package...[0m
+[2025-07-26 17:16:30] Password file read successfully
+[2025-07-26 17:16:30] Created temporary directory: C:\AA\codebuddy\1\task-card-manager\deploy\temp_deploy_20250726_171630
+[2025-07-26 17:16:30] Starting to copy project files...
+[2025-07-26 17:16:30] Copied 152 files
+[2025-07-26 17:16:30] Removed old deployment package
+[2025-07-26 17:16:32] [32m鉁?Deployment package created successfully: task-manager-v4.2.1.zip[0m
+[2025-07-26 17:16:32] Cleaned up temporary directory
+[2025-07-26 17:16:32] 
+[33m[2/5] Checking upload tools...[0m
+[2025-07-26 17:16:32] Checking scp command...
+[2025-07-26 17:16:32] [32m鉁?Found scp tool (OpenSSH)[0m
+[2025-07-26 17:16:32] Checking pscp tool...
+[2025-07-26 17:16:32] pscp tool not found
+[2025-07-26 17:16:32] Checking WinSCP tool...
+[2025-07-26 17:16:32] WinSCP tool not found
+[2025-07-26 17:16:32] Available upload tools: scp
+[2025-07-26 17:16:32] 
+[33m[3/5] Uploading files to server...[0m
+[2025-07-26 17:16:32] Using upload tool: scp
+[2025-07-26 17:16:32] Uploading deployment package...
+[2025-07-26 17:16:32] Executing command: scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null C:\AA\codebuddy\1\task-card-manager\deploy\task-manager-v4.2.1.zip root@115.159.5.111:/tmp/
+[2025-07-26 17:16:43] [32m鉁?Successfully uploaded deployment package using scp[0m
+[2025-07-26 17:16:43] Uploading deployment scripts...
+[2025-07-26 17:16:43] Found 10 shell script files
+[2025-07-26 17:16:43] Uploading script: add-site-to-baota.sh
+[2025-07-26 17:16:48] Uploading script: check-network-access.sh
+[2025-07-26 17:16:54] Uploading script: fix-baota-permissions.sh
+[2025-07-26 17:17:04] Uploading script: fix-nginx-service.sh
+[2025-07-26 17:17:42] Uploading script: fix-site-not-found.sh
+[2025-07-26 17:17:48] Uploading script: one-click-deploy.sh
+[2025-07-26 17:17:55] Uploading script: quick-diagnosis.sh
+[2025-07-26 17:18:02] Uploading script: setup.sh
+[2025-07-26 17:18:07] Uploading script: simple-deployment.sh
+[2025-07-26 17:18:11] Uploading script: verify-deployment.sh
+[2025-07-26 17:18:16] [32m鉁?All files uploaded successfully[0m
+[2025-07-26 17:18:16] 
+[33m[4/5] Executing deployment on server...[0m
+[2025-07-26 17:18:16] [32m鉁?Found ssh tool[0m
+[2025-07-26 17:18:16] Available remote execution tools: ssh
+[2025-07-26 17:18:16] Using remote execution tool: ssh
+[2025-07-26 17:18:16] Setting script execution permissions...
+[2025-07-26 17:18:16] Executing command: ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@115.159.5.111 chmod +x /tmp/*.sh
+[2025-07-26 17:18:22] [32m鉁?Script execution permissions set successfully[0m
+[2025-07-26 17:18:22] Executing deployment script...
+[2025-07-26 17:18:22] Executing deployment commands...
+[2025-07-26 17:18:35] [31m鉁?Deployment failed[0m

@@ -1,0 +1,136 @@
+﻿[2025-07-26 17:59:17] [34m=== Task Manager v4.2.1 Server Deployment Script v4.2.1.2 ===[0m
+[2025-07-26 17:59:17] Start time: 07/26/2025 17:59:17
+[2025-07-26 17:59:17] Log file: C:\AA\codebuddy\1\task-card-manager\deploy\deploy_log_20250726_175917.txt
+[2025-07-26 17:59:17] 
+[2025-07-26 17:59:17] Working directory: C:\AA\codebuddy\1\task-card-manager
+[2025-07-26 17:59:17] [33m[1/5] Creating deployment package...[0m
+[2025-07-26 17:59:17] Password file read successfully
+[2025-07-26 17:59:17] Created temporary directory: C:\AA\codebuddy\1\task-card-manager\deploy\temp_deploy_20250726_175917
+[2025-07-26 17:59:17] Starting to copy project files...
+[2025-07-26 17:59:17] Copied 118 files
+[2025-07-26 17:59:19] [32mSUCCESS: Deployment package created: task-manager-v4.2.1.zip[0m
+[2025-07-26 17:59:19] Cleaned up temporary directory
+[2025-07-26 17:59:19] 
+[33m[2/5] Checking upload tools...[0m
+[2025-07-26 17:59:20] Tool availability check:
+[2025-07-26 17:59:20]   SSH: Available
+[2025-07-26 17:59:20]   SCP: Available
+[2025-07-26 17:59:20]   SSHPASS: Not found
+[2025-07-26 17:59:20] [33mWARNING: sshpass not found, may require manual password input[0m
+[2025-07-26 17:59:20] 
+[33m[3/5] Uploading files to server...[0m
+[2025-07-26 17:59:20] Uploading: deployment package
+[2025-07-26 17:59:20] From: C:\AA\codebuddy\1\task-card-manager\deploy\task-manager-v4.2.1.zip
+[2025-07-26 17:59:20] To: root@115.159.5.111:/tmp/
+[2025-07-26 17:59:38] [32mSUCCESS: deployment package uploaded[0m
+[2025-07-26 17:59:38] Uploading deployment scripts...
+[2025-07-26 17:59:38] Found 11 shell script files
+[2025-07-26 17:59:38] Uploading: script: add-site-to-baota.sh
+[2025-07-26 17:59:38] From: C:\AA\codebuddy\1\task-card-manager\deploy\add-site-to-baota.sh
+[2025-07-26 17:59:38] To: root@115.159.5.111:/tmp/
+[2025-07-26 17:59:43] [32mSUCCESS: script: add-site-to-baota.sh uploaded[0m
+[2025-07-26 17:59:43] Uploading: script: check-network-access.sh
+[2025-07-26 17:59:43] From: C:\AA\codebuddy\1\task-card-manager\deploy\check-network-access.sh
+[2025-07-26 17:59:43] To: root@115.159.5.111:/tmp/
+[2025-07-26 17:59:51] [32mSUCCESS: script: check-network-access.sh uploaded[0m
+[2025-07-26 17:59:51] Uploading: script: fix-baota-permissions.sh
+[2025-07-26 17:59:51] From: C:\AA\codebuddy\1\task-card-manager\deploy\fix-baota-permissions.sh
+[2025-07-26 17:59:51] To: root@115.159.5.111:/tmp/
+[2025-07-26 17:59:56] [32mSUCCESS: script: fix-baota-permissions.sh uploaded[0m
+[2025-07-26 17:59:56] Uploading: script: fix-nginx-service.sh
+[2025-07-26 17:59:56] From: C:\AA\codebuddy\1\task-card-manager\deploy\fix-nginx-service.sh
+[2025-07-26 17:59:56] To: root@115.159.5.111:/tmp/
+[2025-07-26 18:00:00] [32mSUCCESS: script: fix-nginx-service.sh uploaded[0m
+[2025-07-26 18:00:00] Uploading: script: fix-site-not-found.sh
+[2025-07-26 18:00:00] From: C:\AA\codebuddy\1\task-card-manager\deploy\fix-site-not-found.sh
+[2025-07-26 18:00:00] To: root@115.159.5.111:/tmp/
+[2025-07-26 18:00:05] [32mSUCCESS: script: fix-site-not-found.sh uploaded[0m
+[2025-07-26 18:00:05] Uploading: script: one-click-deploy.sh
+[2025-07-26 18:00:05] From: C:\AA\codebuddy\1\task-card-manager\deploy\one-click-deploy.sh
+[2025-07-26 18:00:05] To: root@115.159.5.111:/tmp/
+[2025-07-26 18:00:10] [32mSUCCESS: script: one-click-deploy.sh uploaded[0m
+[2025-07-26 18:00:10] Uploading: script: quick-diagnosis.sh
+[2025-07-26 18:00:10] From: C:\AA\codebuddy\1\task-card-manager\deploy\quick-diagnosis.sh
+[2025-07-26 18:00:10] To: root@115.159.5.111:/tmp/
+[2025-07-26 18:00:14] [32mSUCCESS: script: quick-diagnosis.sh uploaded[0m
+[2025-07-26 18:00:14] Uploading: script: setup.sh
+[2025-07-26 18:00:14] From: C:\AA\codebuddy\1\task-card-manager\deploy\setup.sh
+[2025-07-26 18:00:14] To: root@115.159.5.111:/tmp/
+[2025-07-26 18:00:18] [32mSUCCESS: script: setup.sh uploaded[0m
+[2025-07-26 18:00:18] Uploading: script: simple-deployment.sh
+[2025-07-26 18:00:18] From: C:\AA\codebuddy\1\task-card-manager\deploy\simple-deployment.sh
+[2025-07-26 18:00:18] To: root@115.159.5.111:/tmp/
+[2025-07-26 18:00:22] [32mSUCCESS: script: simple-deployment.sh uploaded[0m
+[2025-07-26 18:00:22] Uploading: script: verify-deployment.sh
+[2025-07-26 18:00:22] From: C:\AA\codebuddy\1\task-card-manager\deploy\verify-deployment.sh
+[2025-07-26 18:00:22] To: root@115.159.5.111:/tmp/
+[2025-07-26 18:00:26] [32mSUCCESS: script: verify-deployment.sh uploaded[0m
+[2025-07-26 18:00:26] Uploading: script: verify-sync-fix.sh
+[2025-07-26 18:00:26] From: C:\AA\codebuddy\1\task-card-manager\deploy\verify-sync-fix.sh
+[2025-07-26 18:00:26] To: root@115.159.5.111:/tmp/
+[2025-07-26 18:00:31] [32mSUCCESS: script: verify-sync-fix.sh uploaded[0m
+[2025-07-26 18:00:31] [32mSUCCESS: All files uploaded[0m
+[2025-07-26 18:00:31] 
+[33m[4/5] Executing deployment on server...[0m
+[2025-07-26 18:00:31] Executing: Set script execution permissions
+[2025-07-26 18:00:31] Command: chmod +x /tmp/*.sh
+[2025-07-26 18:00:38] [32mSUCCESS: Set script execution permissions completed[0m
+[2025-07-26 18:00:38] Executing: Execute deployment process
+[2025-07-26 18:00:38] Command: echo "=== Starting deployment process ===";
+echo "Timestamp: \07/26/2025 18:00:38";
+echo "Working directory: \C:\AA\codebuddy\1\task-card-manager";
+echo "Available scripts:";
+ls -la /tmp/*.sh;
+echo "";
+echo "=== Executing one-click-deploy.sh ===";
+/tmp/one-click-deploy.sh 2>&1;
+DEPLOY_EXIT_CODE=\True;
+echo "";
+echo "=== Deployment script exit code: \ ===";
+if [ \ -ne 0 ]; then
+    echo "=== Deployment failed, trying to get more information ===";
+    echo "Checking if deployment package exists:";
+    ls -la /tmp/task-manager-*.zip;
+    echo "Checking web root directory:";
+    ls -la /www/wwwroot/task-manager/ 2>/dev/null || echo "Web root directory does not exist";
+    echo "Checking nginx status:";
+    systemctl status nginx --no-pager || echo "Nginx status check failed";
+    echo "=== Trying permission fix ===";
+    /tmp/fix-baota-permissions.sh 2>&1;
+    echo "=== Running verification ===";
+    /tmp/verify-deployment.sh 2>&1;
+else
+    echo "=== Deployment successful, running verification ===";
+    /tmp/verify-deployment.sh 2>&1;
+fi;
+echo "=== Deployment process completed ===";
+[2025-07-26 18:00:43] [31mFAILED: Execute deployment process failed with exit code: 2[0m
+[2025-07-26 18:00:43] 
+[33m[5/5] Final verification...[0m
+[2025-07-26 18:00:43] Testing website accessibility...
+[2025-07-26 18:00:43] Executing: Final verification tests
+[2025-07-26 18:00:43] Command: echo "=== Website Accessibility Test ===";
+curl -I http://localhost 2>/dev/null || echo "Local HTTP test failed";
+curl -I http://115.159.5.111 2>/dev/null || echo "External HTTP test failed";
+echo "=== File Structure Check ===";
+find /www/wwwroot/task-manager -name "*.html" -o -name "*.js" -o -name "*.css" | head -10;
+echo "=== Version Check ===";
+grep -r "v4.2.1" /www/wwwroot/task-manager/ | head -5 || echo "Version string not found";
+[2025-07-26 18:00:49] [32mSUCCESS: Final verification tests completed[0m
+[2025-07-26 18:00:49] [32mSUCCESS: All deployment steps completed[0m
+[2025-07-26 18:00:49] 
+[34m=== Deployment Summary ===[0m
+[2025-07-26 18:00:49] Version: v4.2.1
+[2025-07-26 18:00:49] Script Version: v4.2.1.2
+[2025-07-26 18:00:49] Package: task-manager-v4.2.1.zip
+[2025-07-26 18:00:49] Server: 115.159.5.111
+[2025-07-26 18:00:49] Web root: /www/wwwroot/task-manager
+[2025-07-26 18:00:49] Log file: C:\AA\codebuddy\1\task-card-manager\deploy\deploy_log_20250726_175917.txt
+[2025-07-26 18:00:49] Completion time: 07/26/2025 18:00:49
+[2025-07-26 18:00:49] 
+[32mServer deployment completed successfully![0m
+[2025-07-26 18:00:49] Please visit http://115.159.5.111 to verify the website is running
+[2025-07-26 18:00:49] Please visit http://115.159.5.111/sync-test.html to test data sync functionality
+[2025-07-26 18:00:49] Deployment package cleaned up
+[2025-07-26 18:00:49] 
+Deployment log saved to: C:\AA\codebuddy\1\task-card-manager\deploy\deploy_log_20250726_175917.txt

@@ -381,7 +381,7 @@ class DataConsistencyFixer {
             focusRecords: {},
             lastUpdateTime: Date.now(),
             resetAt: new Date().toISOString(),
-            version: '4.2.1'
+            version: '4.2.2'
         };
         
         // 初始化今日任务
