@@ -1,12 +1,13 @@
 /**
- * 跨浏览器数据同步解决方案
+ * 跨浏览器数据同步解决方案 v4.2.3
  * 通过服务器端文件实现数据共享
+ * 修复了多设备同步问题
  */
 
 class CrossBrowserSync {
     constructor() {
         this.syncEndpoint = '/api/data-sync';
-        this.syncInterval = 5000; // 5秒同步一次
+        this.syncInterval = 3000; // 3秒同步一次，提高同步频率
         this.lastSyncTime = 0;
         this.isOnline = navigator.onLine;
         this.syncTimer = null;
@@ -96,7 +97,8 @@ class CrossBrowserSync {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-            }
+            },
+            cache: 'no-cache' // 禁用缓存，确保获取最新数据
         });
 
         if (!response.ok) {
@@ -114,7 +116,7 @@ class CrossBrowserSync {
         const localTime = localData.lastUpdateTime || 0;
         const serverTime = serverData.lastUpdateTime || 0;
         
-        return Math.abs(localTime - serverTime) > 1000; // 1秒差异就同步
+        return Math.abs(localTime - serverTime) > 500; // 0.5秒差异就同步，提高敏感度
     }
 
     // 合并数据
@@ -173,16 +175,17 @@ class CrossBrowserSync {
     }
 }
 
-// 简化版本：基于API的数据共享
+// 增强版本：基于API的数据共享
 class SimpleFileSync {
     constructor() {
         this.syncEndpoint = '/api/data-sync.php';
-        this.checkInterval = 3000; // 3秒检查一次
+        this.checkInterval = 2000; // 2秒检查一次，提高同步频率
         this.lastCheckTime = 0;
         this.isChecking = false;
         this.retryCount = 0;
-        this.maxRetries = 3;
+        this.maxRetries = 5; // 增加重试次数
         this.storageKey = 'taskManagerData';
+        this.version = '4.2.3'; // 更新版本号
         
         this.init();
     }
@@ -213,7 +216,7 @@ class SimpleFileSync {
         // 立即检查一次
         setTimeout(() => {
             this.checkForUpdates();
-        }, 1000);
+        }, 500); // 更快地进行初始同步
     }
 
     // 检查数据更新
@@ -244,6 +247,9 @@ class SimpleFileSync {
                         this.notifyUpdate();
                         console.log('✅ 从服务器更新了数据');
                         this.retryCount = 0; // 重置重试计数
+                    } else {
+                        // 即使不需要更新，也确保本地数据有最新的时间戳
+                        this.updateTimestamp(localData);
                     }
                 } else if (responseData.success && !responseData.data) {
                     // 服务器没有数据，上传本地数据
@@ -265,6 +271,18 @@ class SimpleFileSync {
         }
     }
     
+    // 更新时间戳
+    updateTimestamp(data) {
+        if (!data) return;
+        
+        try {
+            data.lastUpdateTime = Date.now();
+            localStorage.setItem(this.storageKey, JSON.stringify(data));
+        } catch (error) {
+            console.error('更新时间戳失败:', error);
+        }
+    }
+    
     // 处理同步错误
     handleSyncError() {
         this.retryCount++;
@@ -283,6 +301,10 @@ class SimpleFileSync {
             }
         } else {
             console.error('数据同步失败次数过多，请检查网络连接或服务器状态');
+            // 重置重试计数，避免永久阻塞
+            setTimeout(() => {
+                this.retryCount = 0;
+            }, 30000); // 30秒后重置
         }
     }
 
@@ -295,10 +317,15 @@ class SimpleFileSync {
             for (const key of keys) {
                 const data = localStorage.getItem(key);
                 if (data) {
-                    const parsed = JSON.parse(data);
-                    if (parsed && (parsed.tasks || parsed.dailyTasks || parsed.completionHistory)) {
-                        // 标准化数据格式
-                        return this.normalizeData(parsed, key);
+                    try {
+                        const parsed = JSON.parse(data);
+                        if (parsed && (parsed.tasks || parsed.dailyTasks || parsed.completionHistory)) {
+                            // 标准化数据格式
+                            return this.normalizeData(parsed, key);
+                        }
+                    } catch (parseError) {
+                        console.warn(`解析 ${key} 数据失败:`, parseError);
+                        // 继续尝试其他键
                     }
                 }
             }
@@ -312,7 +339,7 @@ class SimpleFileSync {
     // 标准化数据格式
     normalizeData(data, sourceKey) {
         const normalized = {
-            version: data.version || '4.2.2',
+            version: this.version, // 使用当前版本号
             lastUpdateTime: data.lastUpdateTime || Date.now(),
             serverUpdateTime: data.serverUpdateTime || 0,
             username: data.username || '小久',
@@ -328,7 +355,7 @@ class SimpleFileSync {
         return normalized;
     }
 
-    // 合并数据
+    // 合并数据 - 增强版
     mergeData(localData, serverData) {
         if (!localData) return serverData;
         if (!serverData) return localData;
@@ -336,30 +363,142 @@ class SimpleFileSync {
         const localTime = localData.lastUpdateTime || 0;
         const serverTime = serverData.serverUpdateTime || serverData.lastUpdateTime || 0;
 
-        // 如果服务器数据更新，使用服务器数据
+        // 创建合并后的数据对象
+        const mergedData = {
+            version: this.version,
+            lastUpdateTime: Date.now(),
+            serverUpdateTime: Date.now(),
+            username: localData.username || serverData.username || '小久',
+            tasks: [],
+            taskTemplates: { daily: [] },
+            dailyTasks: {},
+            completionHistory: {},
+            taskTimes: {},
+            focusRecords: {}
+        };
+
+        // 如果服务器数据更新，优先使用服务器数据
         if (serverTime > localTime) {
-            console.log('🔄 使用服务器数据 (更新)');
-            return {
-                ...serverData,
-                lastUpdateTime: Date.now()
-            };
+            console.log('🔄 优先使用服务器数据 (更新)');
+            Object.assign(mergedData, serverData);
         } 
-        // 如果本地数据更新，合并到服务器数据结构
+        // 如果本地数据更新，优先使用本地数据
         else if (localTime > serverTime) {
-            console.log('🔄 使用本地数据 (更新)');
-            return {
-                ...localData,
-                lastUpdateTime: Date.now()
-            };
+            console.log('🔄 优先使用本地数据 (更新)');
+            Object.assign(mergedData, localData);
+        }
+        // 时间相同，智能合并数据
+        else {
+            console.log('🔄 智能合并本地和服务器数据');
+            
+            // 合并任务列表 - 取并集
+            mergedData.tasks = this.mergeArrays(localData.tasks, serverData.tasks);
+            
+            // 合并任务模板
+            mergedData.taskTemplates = this.mergeTaskTemplates(localData.taskTemplates, serverData.taskTemplates);
+            
+            // 合并每日任务 - 按日期取最新
+            mergedData.dailyTasks = this.mergeDailyTasks(localData.dailyTasks, serverData.dailyTasks);
+            
+            // 合并完成历史 - 按日期取并集
+            mergedData.completionHistory = this.mergeCompletionHistory(localData.completionHistory, serverData.completionHistory);
+            
+            // 合并任务时间 - 取最大值
+            mergedData.taskTimes = this.mergeTaskTimes(localData.taskTimes, serverData.taskTimes);
+            
+            // 合并专注记录 - 按ID取并集
+            mergedData.focusRecords = this.mergeFocusRecords(localData.focusRecords, serverData.focusRecords);
         }
         
-        // 时间相同，合并数据
-        console.log('🔄 合并本地和服务器数据');
-        return {
-            ...serverData,
-            ...localData,
-            lastUpdateTime: Date.now()
-        };
+        return mergedData;
+    }
+    
+    // 合并数组，去重
+    mergeArrays(arr1 = [], arr2 = []) {
+        const set = new Set([...arr1, ...arr2]);
+        return Array.from(set);
+    }
+    
+    // 合并任务模板
+    mergeTaskTemplates(templates1 = {}, templates2 = {}) {
+        const result = { ...templates1 };
+        
+        // 合并每种类型的模板
+        for (const type in templates2) {
+            if (result[type]) {
+                result[type] = this.mergeArrays(result[type], templates2[type]);
+            } else {
+                result[type] = [...templates2[type]];
+            }
+        }
+        
+        return result;
+    }
+    
+    // 合并每日任务
+    mergeDailyTasks(tasks1 = {}, tasks2 = {}) {
+        const result = { ...tasks1 };
+        
+        // 对每个日期，取最新的任务列表
+        for (const date in tasks2) {
+            if (!result[date] || 
+                (tasks2[date].lastUpdated && (!result[date].lastUpdated || tasks2[date].lastUpdated > result[date].lastUpdated))) {
+                result[date] = tasks2[date];
+            }
+        }
+        
+        return result;
+    }
+    
+    // 合并完成历史
+    mergeCompletionHistory(history1 = {}, history2 = {}) {
+        const result = { ...history1 };
+        
+        // 对每个日期，合并完成状态
+        for (const date in history2) {
+            if (!result[date]) {
+                result[date] = history2[date];
+            } else {
+                // 如果两边都有，取并集（任何一边标记为完成的都算完成）
+                for (let i = 0; i < history2[date].length; i++) {
+                    if (i < result[date].length) {
+                        result[date][i] = result[date][i] || history2[date][i];
+                    } else {
+                        result[date].push(history2[date][i]);
+                    }
+                }
+            }
+        }
+        
+        return result;
+    }
+    
+    // 合并任务时间
+    mergeTaskTimes(times1 = {}, times2 = {}) {
+        const result = { ...times1 };
+        
+        // 对每个任务，取最大时间
+        for (const task in times2) {
+            if (!result[task] || times2[task] > result[task]) {
+                result[task] = times2[task];
+            }
+        }
+        
+        return result;
+    }
+    
+    // 合并专注记录
+    mergeFocusRecords(records1 = {}, records2 = {}) {
+        const result = { ...records1 };
+        
+        // 合并所有记录
+        for (const id in records2) {
+            if (!result[id]) {
+                result[id] = records2[id];
+            }
+        }
+        
+        return result;
     }
 
     // 判断是否应该更新
@@ -369,10 +508,10 @@ class SimpleFileSync {
         
         const localTime = localData.lastUpdateTime || 0;
         const serverTime = serverData.lastUpdateTime || 0;
+        const serverUpdateTime = serverData.serverUpdateTime || 0;
         
         // 如果服务器时间比本地时间新，或者服务器有serverUpdateTime且比本地新
-        return serverTime > localTime || 
-               (serverData.serverUpdateTime && serverData.serverUpdateTime > localTime);
+        return serverTime > localTime || serverUpdateTime > localTime;
     }
 
     // 更新本地数据
@@ -405,6 +544,7 @@ class SimpleFileSync {
             // 确保数据有最新的时间戳
             data.lastUpdateTime = Date.now();
             data.serverUpdateTime = Date.now();
+            data.version = this.version; // 确保版本号正确
             
             const response = await fetch(this.syncEndpoint, {
                 method: 'POST',
@@ -448,7 +588,7 @@ class SimpleFileSync {
                 console.log('🔄 检测到本地数据变化，准备同步');
                 setTimeout(() => {
                     self.checkForUpdates();
-                }, 500);
+                }, 300); // 更快地响应变化
             }
         };
     }
@@ -529,7 +669,7 @@ window.addEventListener('storage', (e) => {
                     window.dataSyncManager.saveToServer(localData);
                 }
             }
-        }, 1000);
+        }, 500); // 更快地响应变化
     }
 });
 
@@ -541,4 +681,4 @@ window.addEventListener('focus', () => {
     }
 });
 
-console.log('跨浏览器数据同步已启动');
+console.log('跨浏览器数据同步 v4.2.3 已启动');

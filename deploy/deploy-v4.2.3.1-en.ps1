@@ -1,10 +1,10 @@
-# 小久任务管理系统 v4.2.2.2 部署脚本
-# 更新日期: 2025-08-02
+# Task Manager System v4.2.3 Deployment Script
+# Update Date: 2025-08-02
 
-# 设置错误操作首选项
+# Set error action preference
 $ErrorActionPreference = "Stop"
 
-# 定义日志函数
+# Define log function
 function Write-Log {
     param (
         [string]$Message,
@@ -15,89 +15,98 @@ function Write-Log {
     $logMessage = "[$timestamp] [$Type] $Message"
     Write-Host $logMessage
     
-    # 如果是从一键部署脚本调用，日志已经被重定向到文件
+    # If called from one-click deployment script, logs are already redirected to file
 }
 
-# 创建部署包函数
+# Create deployment package function
 function Create-Package {
-    Write-Log "开始创建部署包..." "INFO"
+    Write-Log "Starting to create deployment package..." "INFO"
     
-    # 创建临时目录
+    # Create temporary directory
     $tempDir = ".\temp_deploy"
     if (Test-Path $tempDir) {
         Remove-Item -Path $tempDir -Recurse -Force
     }
     New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
     
-    # 复制核心文件
-    Write-Log "复制核心文件..." "INFO"
+    # Copy core files
+    Write-Log "Copying core files..." "INFO"
     
-    # 复制HTML文件
+    # Copy HTML files
     $htmlFiles = @("index.html", "edit-tasks.html", "focus-challenge.html", "statistics.html", "today-tasks.html", "sync-test.html")
     foreach ($file in $htmlFiles) {
         if (Test-Path $file) {
             Copy-Item $file -Destination $tempDir
-            Write-Log "- 已复制: $file" "INFO"
+            Write-Log "- Copied: $file" "INFO"
         } else {
-            Write-Log "- 跳过不存在的文件: $file" "WARN"
+            Write-Log "- Skipped non-existent file: $file" "WARN"
         }
     }
     
-    # 复制配置文件
+    # Copy config files
     $configFiles = @("manifest.json", "icon-192.svg", "favicon.ico")
     foreach ($file in $configFiles) {
         if (Test-Path $file) {
             Copy-Item $file -Destination $tempDir
-            Write-Log "- 已复制: $file" "INFO"
+            Write-Log "- Copied: $file" "INFO"
         } else {
-            Write-Log "- 跳过不存在的文件: $file" "WARN"
+            Write-Log "- Skipped non-existent file: $file" "WARN"
         }
     }
     
-    # 复制CSS目录
+    # Copy CSS directory
     if (Test-Path "css") {
         Copy-Item -Path "css" -Destination "$tempDir\css" -Recurse
-        Write-Log "✅ CSS文件已复制" "INFO"
+        Write-Log "CSS files copied successfully" "INFO"
     } else {
-        Write-Log "CSS目录不存在，已跳过" "WARN"
+        Write-Log "CSS directory does not exist, skipped" "WARN"
         New-Item -ItemType Directory -Path "$tempDir\css" -Force | Out-Null
     }
     
-    # 复制JS目录
+    # Copy JS directory
     if (Test-Path "js") {
         Copy-Item -Path "js" -Destination "$tempDir\js" -Recurse
-        Write-Log "✅ JS文件已复制" "INFO"
+        Write-Log "JS files copied successfully" "INFO"
     } else {
-        Write-Log "JS目录不存在，已跳过" "WARN"
+        Write-Log "JS directory does not exist, skipped" "WARN"
         New-Item -ItemType Directory -Path "$tempDir\js" -Force | Out-Null
     }
     
-    # 复制API目录
+    # Copy API directory
     if (Test-Path "api") {
         Copy-Item -Path "api" -Destination "$tempDir\api" -Recurse
-        Write-Log "✅ API文件已复制" "INFO"
+        Write-Log "API files copied successfully" "INFO"
     } else {
-        Write-Log "API目录不存在，已跳过" "WARN"
+        Write-Log "API directory does not exist, skipped" "WARN"
         New-Item -ItemType Directory -Path "$tempDir\api" -Force | Out-Null
     }
     
-    # 创建数据目录和默认数据
+    # Create data directory and default data
     if (Test-Path "data") {
         Copy-Item -Path "data" -Destination "$tempDir\data" -Recurse
-        Write-Log "✅ 数据文件已复制" "INFO"
+        Write-Log "Data files copied successfully" "INFO"
     } else {
-        Write-Log "数据目录不存在，已创建" "WARN"
+        Write-Log "Data directory does not exist, created" "WARN"
         New-Item -ItemType Directory -Path "$tempDir\data" -Force | Out-Null
         
-        # 创建默认数据文件
+        # Create default data file
         $defaultData = @{
-            tasks = @{
-                templates = @(
-                    @{ name = "学习任务"; type = "daily" }
-                    @{ name = "工作任务"; type = "daily" }
-                    @{ name = "阅读30分钟"; type = "daily" }
-                    @{ name = "锻炼30分钟"; type = "daily" }
-                    @{ name = "写作练习"; type = "daily" }
+            version = "4.2.3"
+            lastUpdateTime = [long](Get-Date -UFormat %s) * 1000
+            tasks = @(
+                "学习任务",
+                "工作任务",
+                "阅读30分钟",
+                "锻炼30分钟",
+                "写作练习"
+            )
+            taskTemplates = @{
+                daily = @(
+                    "学习任务",
+                    "工作任务",
+                    "阅读30分钟",
+                    "锻炼30分钟",
+                    "写作练习"
                 )
             }
             dailyTasks = @{}
@@ -108,15 +117,15 @@ function Create-Package {
         
         $defaultDataJson = ConvertTo-Json $defaultData -Depth 10
         Set-Content -Path "$tempDir\data\shared-tasks.json" -Value $defaultDataJson -Encoding UTF8
-        Write-Log "✅ 已创建默认数据文件" "INFO"
+        Write-Log "Default data file created" "INFO"
     }
     
-    # 创建README文件
+    # Create README file
     if (Test-Path "data\README.md") {
         Copy-Item "data\README.md" -Destination "$tempDir\data\"
     } else {
         $readmeContent = @"
-# 小久任务管理系统 v4.2.2.2
+# 小久任务管理系统 v4.2.3
 
 ## 数据目录说明
 
@@ -128,11 +137,11 @@ function Create-Package {
 请勿手动修改这些文件，以免导致数据损坏。
 "@
         Set-Content -Path "$tempDir\data\README.md" -Value $readmeContent -Encoding UTF8
-        Write-Log "✅ 已创建README文件" "INFO"
+        Write-Log "README file created" "INFO"
     }
     
-    # 创建ZIP包
-    $zipFileName = "task-manager-v4.2.2.2-complete.zip"
+    # Create ZIP package
+    $zipFileName = "task-manager-v4.2.3-complete.zip"
     if (Test-Path $zipFileName) {
         Remove-Item $zipFileName -Force
     }
@@ -140,20 +149,20 @@ function Create-Package {
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     [System.IO.Compression.ZipFile]::CreateFromDirectory($tempDir, $zipFileName)
     
-    # 获取ZIP包大小
+    # Get ZIP package size
     $fileInfo = Get-Item $zipFileName
     $fileSizeKB = [math]::Round($fileInfo.Length / 1KB, 2)
     
-    # 清理临时目录
+    # Clean up temporary directory
     Remove-Item -Path $tempDir -Recurse -Force
     
-    Write-Log "✅ 完整部署包创建成功: $zipFileName" "INFO"
-    Write-Log "📊 包大小: $($fileInfo.Length) 字节" "INFO"
+    Write-Log "Deployment package created successfully: $zipFileName" "INFO"
+    Write-Log "Package size: $($fileInfo.Length) bytes" "INFO"
     
     return $zipFileName
 }
 
-# 部署到服务器函数
+# Deploy to server function
 function Deploy-ToServer {
     param (
         [string]$ZipFile,
@@ -163,123 +172,123 @@ function Deploy-ToServer {
         [string]$RemotePath = "/www/wwwroot/task-manager/"
     )
     
-    Write-Log "开始部署到服务器 $ServerIP..." "INFO"
+    Write-Log "Starting deployment to server $ServerIP..." "INFO"
     
-    # 检查ZIP文件是否存在
+    # Check if ZIP file exists
     if (-not (Test-Path $ZipFile)) {
-        Write-Log "错误: 部署包 $ZipFile 不存在" "ERROR"
+        Write-Log "Error: Deployment package $ZipFile does not exist" "ERROR"
         return $false
     }
     
-    # 提示输入密码
+    # Prompt for password
     if (-not $Password) {
-        $securePassword = Read-Host "请输入服务器密码" -AsSecureString
+        $securePassword = Read-Host "Please enter server password" -AsSecureString
         $Password = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($securePassword))
     }
     
     try {
-        # 创建SFTP会话
-        Write-Log "正在连接到服务器..." "INFO"
+        # Create SFTP session
+        Write-Log "Connecting to server..." "INFO"
         
-        # 这里需要使用实际的SFTP库，例如Posh-SSH
-        # 由于PowerShell Core不自带SFTP功能，这里提供一个示例实现
-        # 实际部署时需要安装Posh-SSH模块
+        # Need to use actual SFTP library, such as Posh-SSH
+        # Since PowerShell Core does not include SFTP functionality, here's a sample implementation
+        # For actual deployment, need to install Posh-SSH module
         
-        Write-Log "检查是否安装了Posh-SSH模块..." "INFO"
+        Write-Log "Checking if Posh-SSH module is installed..." "INFO"
         if (-not (Get-Module -ListAvailable -Name Posh-SSH)) {
-            Write-Log "Posh-SSH模块未安装，尝试安装..." "WARN"
+            Write-Log "Posh-SSH module not installed, attempting to install..." "WARN"
             try {
                 Install-Module -Name Posh-SSH -Force -Scope CurrentUser
-                Write-Log "✅ Posh-SSH模块安装成功" "INFO"
+                Write-Log "Posh-SSH module installed successfully" "INFO"
             }
             catch {
-                Write-Log "❌ 无法安装Posh-SSH模块: $_" "ERROR"
-                Write-Log "请手动安装Posh-SSH模块后重试，或使用手动部署方式" "ERROR"
+                Write-Log "Cannot install Posh-SSH module: $_" "ERROR"
+                Write-Log "Please install Posh-SSH module manually and try again, or use manual deployment method" "ERROR"
                 return $false
             }
         }
         
-        # 导入Posh-SSH模块
+        # Import Posh-SSH module
         Import-Module Posh-SSH
         
-        # 创建凭据
+        # Create credentials
         $securePassword = ConvertTo-SecureString $Password -AsPlainText -Force
         $credentials = New-Object System.Management.Automation.PSCredential ($Username, $securePassword)
         
-        # 创建SFTP会话
+        # Create SSH session
         $session = New-SSHSession -ComputerName $ServerIP -Credential $credentials -AcceptKey
         
         if ($session) {
-            Write-Log "✅ 成功连接到服务器" "INFO"
+            Write-Log "Successfully connected to server" "INFO"
             
-            # 创建SFTP会话
+            # Create SFTP session
             $sftpSession = New-SFTPSession -ComputerName $ServerIP -Credential $credentials
             
-            # 上传ZIP文件
-            Write-Log "正在上传部署包..." "INFO"
+            # Upload ZIP file
+            Write-Log "Uploading deployment package..." "INFO"
             $remoteZipPath = "/tmp/$ZipFile"
             Set-SFTPItem -SFTPSession $sftpSession -Path $ZipFile -Destination "/tmp/" -Force
             
-            Write-Log "✅ 部署包上传成功" "INFO"
+            Write-Log "Deployment package uploaded successfully" "INFO"
             
-            # 执行远程命令解压文件
-            Write-Log "正在解压部署包..." "INFO"
+            # Execute remote command to extract file
+            Write-Log "Extracting deployment package..." "INFO"
             $command = "mkdir -p $RemotePath && unzip -o $remoteZipPath -d $RemotePath && chown -R www:www $RemotePath && chmod -R 755 $RemotePath"
             $result = Invoke-SSHCommand -SSHSession $session -Command $command
             
             if ($result.ExitStatus -eq 0) {
-                Write-Log "✅ 部署包解压成功" "INFO"
+                Write-Log "Deployment package extracted successfully" "INFO"
                 
-                # 清理远程临时文件
+                # Clean up remote temporary file
                 Invoke-SSHCommand -SSHSession $session -Command "rm -f $remoteZipPath"
                 
-                Write-Log "✅ 部署完成" "INFO"
-                Write-Log "🌐 网站地址: http://$ServerIP/" "INFO"
-                Write-Log "🧪 测试地址: http://$ServerIP/sync-test.html" "INFO"
+                Write-Log "Deployment completed" "INFO"
+                Write-Log "Website URL: http://$ServerIP/" "INFO"
+                Write-Log "Test URL: http://$ServerIP/sync-test.html" "INFO"
             }
             else {
-                Write-Log "❌ 部署包解压失败: $($result.Output)" "ERROR"
+                Write-Log "Failed to extract deployment package: $($result.Output)" "ERROR"
                 return $false
             }
             
-            # 关闭会话
+            # Close sessions
             Remove-SSHSession -SSHSession $session | Out-Null
             Remove-SFTPSession -SFTPSession $sftpSession | Out-Null
             
             return $true
         }
         else {
-            Write-Log "❌ 无法连接到服务器" "ERROR"
+            Write-Log "Cannot connect to server" "ERROR"
             return $false
         }
     }
     catch {
-        Write-Log "❌ 部署过程中出现错误: $_" "ERROR"
+        Write-Log "Error during deployment: $_" "ERROR"
         return $false
     }
 }
 
-# 主函数
+# Main function
 function Main {
-    Write-Log "小久任务管理系统 v4.2.2.2 自动部署开始" "INFO"
+    Write-Log "Task Manager System v4.2.3 Automatic Deployment Started" "INFO"
     
-    # 创建部署包
+    # Create deployment package
     $zipFile = Create-Package
     
-    # 部署到服务器
+    # Deploy to server
     $deployResult = Deploy-ToServer -ZipFile $zipFile
     
     if ($deployResult) {
-        Write-Log "🎉 部署成功完成！" "INFO"
+        Write-Log "Deployment completed successfully!" "INFO"
         return 0
     }
     else {
-        Write-Log "❌ 部署失败，请查看上方错误信息" "ERROR"
+        Write-Log "Deployment failed, please check error messages above" "ERROR"
         return 1
     }
 }
 
-# 如果直接运行脚本，则执行Main函数
+# If script is run directly, execute Main function
 if ($MyInvocation.InvocationName -eq $MyInvocation.MyCommand.Name) {
     Main
     exit $LASTEXITCODE

@@ -1,0 +1,103 @@
+======================================== 
+   小久任务管理系统 v4.2.2.2 一键部署    
+======================================== 
+部署开始时间: 2025-08-02 20:21:43.50 
+ 
+检查PowerShell是否可用... 
+✅ PowerShell检测成功 
+显示部署选项... 
+1. 自动部署到服务器 
+2. 手动部署到服务器 (推荐) 
+3. Git部署 
+4. 仅创建部署包 
+用户选择: 1 
+开始自动部署到服务器... 
+执行命令: powershell -ExecutionPolicy Bypass -File "C:\AA\codebuddy\1\task-card-manager\deploy\deploy-v4.2.2.2.ps1" 
+At C:\AA\codebuddy\1\task-card-manager\deploy\deploy-v4.2.2.2.ps1:125 char:2
++ - shared-tasks.json: 鍏变韩浠诲姟鏁版嵁锛屽寘鍚换鍔℃ā鏉垮拰瀹屾垚璁板綍
++  ~
+Missing expression after unary operator '-'.
+At C:\AA\codebuddy\1\task-card-manager\deploy\deploy-v4.2.2.2.ps1:125 char:3
++ - shared-tasks.json: 鍏变韩浠诲姟鏁版嵁锛屽寘鍚换鍔℃ā鏉垮拰瀹屾垚璁板綍
++   ~~~~~~~~~~~~~~~~~~
+Unexpected token 'shared-tasks.json:' in expression or statement.
+At C:\AA\codebuddy\1\task-card-manager\deploy\deploy-v4.2.2.2.ps1:126 char:2
++ - 鍏朵粬JSON鏂囦欢: 绯荤粺鑷姩鐢熸垚鐨勬暟鎹枃浠?
++  ~
+Missing expression after unary operator '-'.
+At C:\AA\codebuddy\1\task-card-manager\deploy\deploy-v4.2.2.2.ps1:126 char:3
++ - 鍏朵粬JSON鏂囦欢: 绯荤粺鑷姩鐢熸垚鐨勬暟鎹枃浠?
++   ~~~~~~~~~~~
+Unexpected token '鍏朵粬JSON鏂囦欢:' in expression or statement.
+At C:\AA\codebuddy\1\task-card-manager\deploy\deploy-v4.2.2.2.ps1:130 char:28
++ ... tent -Path "$tempDir\data\README.md" -Value $readmeContent -Encoding  ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Unexpected token '$tempDir\data\README.md" -Value $readmeContent -Encoding UTF8
+        Write-Log "鉁?宸插垱寤篟EADME鏂囦欢" "INFO"
+    }
+    
+    # 鍒涘缓ZIP鍖?
+    $zipFileName = "task-manager-v4.2.2.2-complete.zip"
+    if (Test-Path $zipFileName) {
+        Remove-Item $zipFileName -Force
+    }
+    
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    [System.IO.Compression.ZipFile]::CreateFromDirectory($tempDir, $zipFileName)
+    
+    # 鑾峰彇ZIP鍖呭ぇ灏?
+    $fileInfo = Get-Item $zipFileName
+    $fileSizeKB = [math]::Round($fileInfo.Length / 1KB, 2)
+    
+    # 娓呯悊涓存椂鐩綍
+    Remove-Item -Path $tempDir -Recurse -Force
+    
+    Write-Log "鉁?瀹屾暣閮ㄧ讲鍖呭垱寤烘垚鍔?' in expression or statement.
+At C:\AA\codebuddy\1\task-card-manager\deploy\deploy-v4.2.2.2.ps1:130 char:36
++ ...  -Path "$tempDir\data\README.md" -Value $readmeContent -Encoding UTF8
++                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Unexpected token '\data\README.md" -Value $readmeContent -Encoding UTF8
+        Write-Log "鉁?宸插垱寤篟EADME鏂囦欢" "INFO"
+    }
+    
+    # 鍒涘缓ZIP鍖?
+    $zipFileName = "task-manager-v4.2.2.2-complete.zip"
+    if (Test-Path $zipFileName) {
+        Remove-Item $zipFileName -Force
+    }
+    
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    [System.IO.Compression.ZipFile]::CreateFromDirectory($tempDir, $zipFileName)
+    
+    # 鑾峰彇ZIP鍖呭ぇ灏?
+    $fileInfo = Get-Item $zipFileName
+    $fileSizeKB = [math]::Round($fileInfo.Length / 1KB, 2)
+    
+    # 娓呯悊涓存椂鐩綍
+    Remove-Item -Path $tempDir -Recurse -Force
+    
+    Write-Log "鉁?瀹屾暣閮ㄧ讲鍖呭垱寤烘垚鍔?' in expression or statement.
+At C:\AA\codebuddy\1\task-card-manager\deploy\deploy-v4.2.2.2.ps1:277 char:51
++         Write-Log "鉂?閮ㄧ讲澶辫触锛岃鏌ョ湅涓婃柟閿欒淇℃伅" "ERROR"
++                                                   ~
+The string is missing the terminator: ".
+At C:\AA\codebuddy\1\task-card-manager\deploy\deploy-v4.2.2.2.ps1:272 char:24
++     if ($deployResult) {
++                        ~
+Missing closing '}' in statement block or type definition.
+At C:\AA\codebuddy\1\task-card-manager\deploy\deploy-v4.2.2.2.ps1:230 char:43
++             if ($result.ExitStatus -eq 0) {
++                                           ~
+Missing closing '}' in statement block or type definition.
+At C:\AA\codebuddy\1\task-card-manager\deploy\deploy-v4.2.2.2.ps1:195 char:19
++             catch {
++                   ~
+Missing closing '}' in statement block or type definition.
+Not all parse errors were reported.  Correct the reported errors and try again.
+    + CategoryInfo          : ParserError: (:) [], ParentContainsErrorRecordException
+    + FullyQualifiedErrorId : MissingExpressionAfterOperator
+ 
+部署完成，状态码: 1 
+错误代码: 1 
+部署结束时间: 2025-08-02 20:21:45.96 
+======================================== 

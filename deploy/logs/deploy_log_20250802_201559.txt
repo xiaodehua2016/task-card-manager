@@ -52,3 +52,4 @@ operable program or batch file.
 '-' is not recognized as an internal or external command,
 operable program or batch file.
 The filename, directory name, or volume label syntax is incorrect.
+: was unexpected at this time.
