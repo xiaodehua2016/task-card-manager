@@ -1,6 +1,6 @@
 @echo off
 chcp 65001 > nul
-title 小久任务管理系统 v4.2.3 一键部署
+title 小久任务管理系统 v4.2.4 一键部署
 
 REM 设置日志文件
 set TIMESTAMP=%date:~0,4%%date:~5,2%%date:~8,2%_%time:~0,2%%time:~3,2%%time:~6,2%
@@ -13,14 +13,14 @@ if not exist "%LOG_DIR%" mkdir "%LOG_DIR%"
 
 REM 开始记录日志
 echo ======================================== > "%LOG_FILE%"
-echo    小久任务管理系统 v4.2.3 一键部署    >> "%LOG_FILE%"
+echo    小久任务管理系统 v4.2.4 一键部署    >> "%LOG_FILE%"
 echo ======================================== >> "%LOG_FILE%"
 echo 部署开始时间: %date% %time% >> "%LOG_FILE%"
 echo. >> "%LOG_FILE%"
 
 echo.
 echo ========================================
-echo    小久任务管理系统 v4.2.3 一键部署
+echo    小久任务管理系统 v4.2.4 一键部署
 echo ========================================
 echo.
 echo 📝 日志将保存到: %LOG_FILE%
@@ -68,8 +68,8 @@ goto invalid_choice
 echo.
 echo 🚀 开始自动部署到服务器...
 echo 开始自动部署到服务器... >> "%LOG_FILE%"
-echo 执行命令: powershell -ExecutionPolicy Bypass -File "%~dp0deploy-v4.2.3.1-simple.ps1" >> "%LOG_FILE%"
-powershell -ExecutionPolicy Bypass -File "%~dp0deploy-v4.2.3.1-simple.ps1" >> "%LOG_FILE%" 2>&1
+echo 执行命令: powershell -ExecutionPolicy Bypass -File "%~dp0deploy-v4.2.4.1-simple.ps1" >> "%LOG_FILE%"
+powershell -ExecutionPolicy Bypass -File "%~dp0deploy-v4.2.4.1-simple.ps1" >> "%LOG_FILE%" 2>&1
 set DEPLOY_STATUS=%errorlevel%
 echo 部署完成，状态码: %DEPLOY_STATUS% >> "%LOG_FILE%"
 if %DEPLOY_STATUS% neq 0 (
@@ -82,8 +82,8 @@ goto end
 echo.
 echo 🚀 开始手动部署准备...
 echo 开始手动部署准备... >> "%LOG_FILE%"
-echo 执行命令: call "%~dp0部署到服务器-v4.2.3.1.bat" >> "%LOG_FILE%"
-call "%~dp0部署到服务器-v4.2.3.1.bat" >> "%LOG_FILE%" 2>&1
+echo 执行命令: call "%~dp0部署到服务器-v4.2.4.1.bat" >> "%LOG_FILE%"
+call "%~dp0部署到服务器-v4.2.4.1.bat" >> "%LOG_FILE%" 2>&1
 set DEPLOY_STATUS=%errorlevel%
 echo 部署完成，状态码: %DEPLOY_STATUS% >> "%LOG_FILE%"
 if %DEPLOY_STATUS% neq 0 (
@@ -96,8 +96,8 @@ goto end
 echo.
 echo 🚀 开始Git部署...
 echo 开始Git部署... >> "%LOG_FILE%"
-echo 执行命令: call "%~dp0Git部署-v4.2.3.1.bat" >> "%LOG_FILE%"
-call "%~dp0Git部署-v4.2.3.1.bat" >> "%LOG_FILE%" 2>&1
+echo 执行命令: call "%~dp0Git部署-v4.2.4.1.bat" >> "%LOG_FILE%"
+call "%~dp0Git部署-v4.2.4.1.bat" >> "%LOG_FILE%" 2>&1
 set DEPLOY_STATUS=%errorlevel%
 echo 部署完成，状态码: %DEPLOY_STATUS% >> "%LOG_FILE%"
 if %DEPLOY_STATUS% neq 0 (
@@ -110,26 +110,27 @@ goto end
 echo.
 echo 📦 仅创建部署包...
 echo 仅创建部署包... >> "%LOG_FILE%"
-echo 执行命令: powershell -ExecutionPolicy Bypass -Command "& { . '%~dp0deploy-v4.2.3.1-en.ps1'; Create-Package }" >> "%LOG_FILE%"
-powershell -ExecutionPolicy Bypass -Command "& { . '%~dp0deploy-v4.2.3.1-en.ps1'; Create-Package }" >> "%LOG_FILE%" 2>&1
+echo 执行命令: powershell -ExecutionPolicy Bypass -Command "& {. '%~dp0deploy-v4.2.4.1-simple.ps1' -PackageOnly}" >> "%LOG_FILE%"
+powershell -ExecutionPolicy Bypass -Command "& {. '%~dp0deploy-v4.2.4.1-simple.ps1' -PackageOnly}" >> "%LOG_FILE%" 2>&1
 set DEPLOY_STATUS=%errorlevel%
-echo 部署包创建完成，状态码: %DEPLOY_STATUS% >> "%LOG_FILE%"
+echo 部署完成，状态码: %DEPLOY_STATUS% >> "%LOG_FILE%"
 if %DEPLOY_STATUS% neq 0 (
-    echo ❌ 创建部署包过程中出现错误，请查看日志文件: %LOG_FILE%
+    echo ❌ 部署过程中出现错误，请查看日志文件: %LOG_FILE%
     echo 错误代码: %DEPLOY_STATUS% >> "%LOG_FILE%"
 )
 goto end
 
 :invalid_choice
-echo ❌ 无效选择，请重新运行脚本
-echo ❌ 无效选择，请重新运行脚本 >> "%LOG_FILE%"
+echo.
+echo ❌ 无效的选择: %choice%
+echo 请重新运行脚本并选择有效的选项 (1-4)
 goto end
 
 :end
 echo.
 echo 部署结束时间: %date% %time% >> "%LOG_FILE%"
 echo ======================================== >> "%LOG_FILE%"
-echo 🎉 操作完成！
 echo.
 echo 📝 完整日志已保存到: %LOG_FILE%
+echo.
 pause

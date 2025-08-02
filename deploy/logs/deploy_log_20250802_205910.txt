@@ -20,3 +20,9 @@
 
 📝 日志将保存到: C:\AA\codebuddy\1\task-card-manager\deploy\logs\git_deploy_log_20250802_205912.txt
 
+
+📦 正在创建部署包...
+复制核心文件...
+
+🚀 开始Git部署...
+: was unexpected at this time.

@@ -26,7 +26,7 @@ if (!is_dir($dataDir)) {
 // 确保文件存在且可写
 if (!file_exists($dataFile)) {
     $defaultData = [
-        'version' => '4.2.2',
+        'version' => '4.2.4',
         'lastUpdateTime' => time() * 1000,
         'serverUpdateTime' => time() * 1000,
         'username' => '小久',

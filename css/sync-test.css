@@ -1,0 +1,78 @@
+/* 同步测试页面样式 */
+.test-section {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.test-section h2 {
+    margin-top: 0;
+    color: #3498db;
+    font-size: 1.2em;
+}
+
+.test-result {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 5px;
+    font-family: monospace;
+    white-space: pre-wrap;
+    max-height: 200px;
+    overflow-y: auto;
+    background-color: #f0f0f0;
+}
+
+.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
+.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.status-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.status-online {
+    background-color: #2ecc71;
+}
+
+.status-offline {
+    background-color: #e74c3c;
+}
+
+.progress-container {
+    width: 100%;
+    background-color: #f1f1f1;
+    border-radius: 5px;
+    margin: 10px 0;
+}
+
+.progress-bar {
+    height: 20px;
+    background-color: #3498db;
+    border-radius: 5px;
+    width: 0%;
+    transition: width 0.3s;
+    text-align: center;
+    line-height: 20px;
+    color: white;
+    font-size: 12px;
+}

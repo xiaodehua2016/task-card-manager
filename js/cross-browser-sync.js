@@ -1,5 +1,5 @@
 /**
- * 跨浏览器数据同步解决方案 v4.2.3
+ * 跨浏览器数据同步解决方案 v4.2.4
  * 通过服务器端文件实现数据共享
  * 修复了多设备同步问题
  */
@@ -185,7 +185,7 @@ class SimpleFileSync {
         this.retryCount = 0;
         this.maxRetries = 5; // 增加重试次数
         this.storageKey = 'taskManagerData';
-        this.version = '4.2.3'; // 更新版本号
+        this.version = '4.2.4'; // 更新版本号
         
         this.init();
     }
@@ -681,4 +681,4 @@ window.addEventListener('focus', () => {
     }
 });
 
-console.log('跨浏览器数据同步 v4.2.3 已启动');
+console.log('跨浏览器数据同步 v4.2.4 已启动');
