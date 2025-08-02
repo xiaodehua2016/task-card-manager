@@ -68,3 +68,10 @@ data\shared-tasks.json
 ✅ 部署包创建成功: task-manager-v4.2.2.2-complete.zip 
 📊 包大小: 100695 字节 
 开始Git部署... 
+warning: in the working copy of 'deploy/logs/git_deploy_log_20250802_195014.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'deploy/logs/git_deploy_log_20250802_201016.txt', LF will be replaced by CRLF the next time Git touches it
+提交更改到Git... 
+❌ Git提交失败 
+尝试创建初始提交... 
+[main b2f1355] 📝 初始提交
+ 1 file changed, 1 insertion(+), 210 deletions(-)
