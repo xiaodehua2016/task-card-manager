@@ -1,7 +1,7 @@
 ======================================== 
    小久任务管理系统 v4.2.3 Git部署    
 ======================================== 
-部署开始时间: 2025-08-02 20:55:07.88 
+部署开始时间: 2025-08-02 20:57:39.07 
  
 当前工作目录: C:\AA\codebuddy\1\task-card-manager 
 检查Git是否可用... 
@@ -68,23 +68,3 @@ data\shared-tasks.json
 ✅ 部署包创建成功: task-manager-v4.2.3-complete.zip 
 📊 包大小: 101929 字节 
 开始Git部署... 
-warning: in the working copy of 'deploy/logs/deploy_log_20250802_201559.txt', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'deploy/logs/git_deploy_log_20250802_201600.txt', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'deploy/logs/git_deploy_log_20250802_205507.txt', LF will be replaced by CRLF the next time Git touches it
-提交更改到Git... 
-❌ Git提交失败 
-尝试创建初始提交... 
-[main 94f542f] 📝 初始提交
- 1 file changed, 1 insertion(+), 1 deletion(-)
-warning: in the working copy of 'deploy/logs/git_deploy_log_20250802_205507.txt', LF will be replaced by CRLF the next time Git touches it
-[main 4b1f47f] ✨ 更新任务管理系统到v4.2.3版本
- 2 files changed, 20 insertions(+)
-当前分支: main 
-coding	https://e.coding.net/xiaodehua2016/task-card-manager.git (fetch)
-coding	https://e.coding.net/xiaodehua2016/task-card-manager.git (push)
-gitee	git@gitee.com:xiaodehua2016/task-card-manager.git (fetch)
-gitee	git@gitee.com:xiaodehua2016/task-card-manager.git (push)
-netlify	https://github.com/xiaodehua2016/task-card-manager.git (fetch)
-netlify	https://github.com/xiaodehua2016/task-card-manager.git (push)
-origin	https://github.com/xiaodehua2016/task-card-manager (fetch)
-origin	https://github.com/xiaodehua2016/task-card-manager (push)
