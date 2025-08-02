@@ -13,3 +13,18 @@
 用户选择: 3 
 开始Git部署... 
 执行命令: call "C:\AA\codebuddy\1\task-card-manager\deploy\Git部署-v4.2.2.1.bat" 
+
+========================================
+   小久任务管理系统 v4.2.2.1 Git部署
+========================================
+
+日志文件: "C:\AA\codebuddy\1\task-card-manager\deploy\logs\git_deploy_log_20250802_195014.txt"
+
+
+🚀 开始Git部署...
+
+✅ Git部署成功完成！
+
+日志文件保存在: "C:\AA\codebuddy\1\task-card-manager\deploy\logs\git_deploy_log_20250802_195014.txt"
+
+Press any key to continue . . . 
