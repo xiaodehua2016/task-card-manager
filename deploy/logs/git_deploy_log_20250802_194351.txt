@@ -1,0 +1,41 @@
+v4.2.2.1 Git部署 
+======================================== 
+部署开始时间: 2025-08-02 19:43:51.53 
+ 
+检查PowerShell是否可用... 
+✅ PowerShell检测成功 
+🚀 开始Git部署... 
+
+========================================
+   Task Manager System v4.2.2.1 Git Deployment
+========================================
+
+Creating deployment package...
+Copying core files...
+  - Skipped non-existent file: index.html
+  - Skipped non-existent file: edit-tasks.html
+  - Skipped non-existent file: focus-challenge.html
+  - Skipped non-existent file: statistics.html
+  - Skipped non-existent file: today-tasks.html
+  - Skipped non-existent file: sync-test.html
+  - Skipped non-existent file: manifest.json
+  - Skipped non-existent file: icon-192.svg
+  - Skipped non-existent file: favicon.ico
+CSS directory does not exist, skipped
+JS directory does not exist, skipped
+API directory does not exist, skipped
+Data directory does not exist, created
+Deployment package created successfully: task-manager-v4.2.2.1-complete.zip
+Package size: 395 bytes
+
+Starting Git deployment...
+Current directory is not a Git repository, cannot deploy
+ 
+部署完成，状态码: 0 
+✅ Git部署成功完成！ 
+ 
+部署结束时间: 2025-08-02 19:43:52.57 
+======================================== 
+部署完成，状态码: 0 
+部署结束时间: 2025-08-02 19:43:53.79 
+======================================== 

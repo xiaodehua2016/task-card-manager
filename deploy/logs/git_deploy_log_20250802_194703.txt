@@ -1,0 +1,110 @@
+v4.2.2.1 Git部署 
+======================================== 
+部署开始时间: 2025-08-02 19:47:03.23 
+ 
+检查PowerShell是否可用... 
+✅ PowerShell检测成功 
+检查Git是否可用... 
+✅ Git检测成功 
+git version 2.50.1.windows.1
+检查Git仓库... 
+❌ 当前目录不是Git仓库，正在初始化... 
+Initialized empty Git repository in C:/AA/codebuddy/1/task-card-manager/deploy/.git/
+✅ Git仓库初始化成功 
+检查Git用户配置... 
+forwxh
+forwxh@126.com
+🚀 开始Git部署... 
+
+========================================
+   Task Manager System v4.2.2.1 Git Deployment
+========================================
+
+Creating deployment package...
+Copying core files...
+  - Skipped non-existent file: index.html
+  - Skipped non-existent file: edit-tasks.html
+  - Skipped non-existent file: focus-challenge.html
+  - Skipped non-existent file: statistics.html
+  - Skipped non-existent file: today-tasks.html
+  - Skipped non-existent file: sync-test.html
+  - Skipped non-existent file: manifest.json
+  - Skipped non-existent file: icon-192.svg
+  - Skipped non-existent file: favicon.ico
+CSS directory does not exist, skipped
+JS directory does not exist, skipped
+API directory does not exist, skipped
+Data directory does not exist, created
+Deployment package created successfully: task-manager-v4.2.2.1-complete.zip
+Package size: 395 bytes
+
+Starting Git deployment...
+Committing code...
+warning: in the working copy of 'history/add-site-to-baota.sh', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'history/check-network-access.sh', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'history/config/supabase.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'history/deploy_log_20250726_171629.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'history/deploy_log_20250726_174443.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'history/deploy_log_20250726_174716.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'history/deploy_log_20250726_175917.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'history/fix-baota-permissions.sh', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'history/fix-nginx-service.sh', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'history/fix-site-not-found.sh', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'history/one-click-deploy.sh', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'history/quick-diagnosis.sh', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'history/release-v3.0.sh', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'history/setup.sh', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'history/simple-deployment.sh', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'history/verify-deployment.sh', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'history/verify-sync-fix.sh', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'logs/git_deploy_log_20250802_194351.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'logs/git_deploy_log_20250802_194703.txt', LF will be replaced by CRLF the next time Git touches it
+Code committed successfully
+Pushing to GitHub...
+error: src refspec main does not match any
+error: failed to push some refs to 'origin'
+Code push failed, exit code: 1
+Please check Git configuration and network connection
+
+Post-deployment test steps:
+
+1. Basic test:
+   - Visit the deployed website
+   - Check if the page loads correctly
+   - Add a few tasks and complete them
+
+2. Sync test:
+   - Complete some tasks in Chrome
+   - Open the same address in Firefox
+   - Check if task status is synchronized
+   - Wait 3-5 seconds to observe automatic synchronization
+
+3. Diagnostic test:
+   - Visit sync-test.html
+   - Click 'Run Diagnostic' to check sync status
+   - If there are issues, click 'Auto Fix'
+
+4. Cross-device test:
+   - Visit in mobile browser
+   - Visit in browsers on different computers
+   - Verify data synchronization across all devices
+
+v4.2.2.1 Version features summary:
+- Cross-browser data synchronization - completely fixed
+- Real-time data synchronization - completed within 3 seconds
+- Smart error recovery - automatic repair mechanism
+- Local storage monitoring - instant synchronization triggering
+- Visual diagnostics - problem troubleshooting tool
+- Simplified deployment process - one file solution
+- Enhanced deployment scripts - more stable and reliable
+
+Deployment complete! Please visit the sync test page for diagnostics
+ 
+部署完成，状态码: 0 
+✅ Git部署成功完成！ 
+ 
+部署结束时间: 2025-08-02 19:47:05.67 
+======================================== 
+部署完成，状态码: 0 
+部署结束时间: 2025-08-02 19:47:08.33 
+======================================== 
