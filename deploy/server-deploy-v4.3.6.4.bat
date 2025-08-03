@@ -1,12 +1,12 @@
 @echo off
 chcp 65001 >nul
 echo ========================================
-echo 任务管理系统 v4.3.6.3 服务器部署脚本
-echo 功能：恢复任务计时 + 跨浏览器数据同步
+echo 任务管理系统 v4.3.6.4 服务器部署脚本
+echo 功能：修复跨浏览器数据同步问题
 echo ========================================
 echo.
 
-set VERSION=4.3.6.3
+set VERSION=4.3.6.4
 set PACKAGE_NAME=task-manager-v%VERSION%
 set SERVER_IP=115.159.5.111
 set SERVER_USER=root
@@ -29,7 +29,7 @@ echo [2/3] 生成服务器部署命令...
 :: 创建服务器部署脚本
 echo #!/bin/bash > quick_deploy_v%VERSION%.sh
 echo # 任务管理系统 v%VERSION% 服务器部署脚本 >> quick_deploy_v%VERSION%.sh
-echo # 功能：恢复任务计时 + 跨浏览器数据同步 >> quick_deploy_v%VERSION%.sh
+echo # 功能：修复跨浏览器数据同步问题 >> quick_deploy_v%VERSION%.sh
 echo echo "开始部署任务管理系统 v%VERSION%..." >> quick_deploy_v%VERSION%.sh
 echo. >> quick_deploy_v%VERSION%.sh
 echo # 创建备份 >> quick_deploy_v%VERSION%.sh
@@ -52,6 +52,13 @@ echo chown -R www:www task-manager/ >> quick_deploy_v%VERSION%.sh
 echo chmod -R 755 task-manager/ >> quick_deploy_v%VERSION%.sh
 echo chmod -R 777 task-manager/api/data/ >> quick_deploy_v%VERSION%.sh
 echo. >> quick_deploy_v%VERSION%.sh
+echo # 创建共享数据文件 >> quick_deploy_v%VERSION%.sh
+echo echo "初始化共享数据文件..." >> quick_deploy_v%VERSION%.sh
+echo touch task-manager/api/data/shared_task_data.json >> quick_deploy_v%VERSION%.sh
+echo chmod 666 task-manager/api/data/shared_task_data.json >> quick_deploy_v%VERSION%.sh
+echo touch task-manager/api/data/sync_log.txt >> quick_deploy_v%VERSION%.sh
+echo chmod 666 task-manager/api/data/sync_log.txt >> quick_deploy_v%VERSION%.sh
+echo. >> quick_deploy_v%VERSION%.sh
 echo # 重启服务 >> quick_deploy_v%VERSION%.sh
 echo echo "重启Web服务..." >> quick_deploy_v%VERSION%.sh
 echo systemctl restart nginx >> quick_deploy_v%VERSION%.sh
@@ -60,7 +67,8 @@ echo. >> quick_deploy_v%VERSION%.sh
 echo echo "部署完成！" >> quick_deploy_v%VERSION%.sh
 echo echo "访问地址: http://%SERVER_IP%/task-manager/" >> quick_deploy_v%VERSION%.sh
 echo echo "版本: v%VERSION%" >> quick_deploy_v%VERSION%.sh
-echo echo "主要功能: 恢复任务计时 + 跨浏览器数据同步" >> quick_deploy_v%VERSION%.sh
+echo echo "主要修复: 跨浏览器数据同步问题" >> quick_deploy_v%VERSION%.sh
+echo echo "共享数据文件: /www/wwwroot/task-manager/api/data/shared_task_data.json" >> quick_deploy_v%VERSION%.sh
 
 echo [3/3] 显示部署命令...
 echo.
@@ -95,17 +103,22 @@ echo cd /www/wwwroot/ ^&^& chmod +x quick_deploy_v%VERSION%.sh ^&^& ./quick_depl
 
 echo 命令已保存到: server_commands_v%VERSION%.txt
 echo.
-echo v%VERSION% 主要功能:
-echo   - 恢复任务计时功能 - 每个任务显示累计用时
-echo   - 跨浏览器数据同步 - 基于服务器文件同步
-echo   - 智能数据合并 - 自动处理冲突
-echo   - 完整API支持 - data-sync.php提供同步服务
+echo v%VERSION% 主要修复:
+echo   - 使用共享数据文件确保数据一致性
+echo   - 所有浏览器访问同一个数据文件
+echo   - 优化数据合并算法
+echo   - 增强文件锁机制防止数据冲突
 echo.
 echo 部署后验证:
 echo   1. 访问 http://%SERVER_IP%/task-manager/
-echo   2. 检查任务计时功能是否正常
-echo   3. 在不同浏览器中测试数据同步
+echo   2. 在Chrome中完成一个任务
+echo   3. 在Edge中刷新页面，检查任务状态是否同步
 echo   4. 确认API接口 /api/data-sync.php 可访问
+echo   5. 检查共享数据文件是否正常创建
+echo.
+echo 调试命令:
+echo   访问 http://%SERVER_IP%/task-manager/api/data-sync.php
+echo   POST数据: {"action":"debug"}
 echo.
 echo 部署文件清单:
 echo   - %PACKAGE_NAME%.zip (部署包)

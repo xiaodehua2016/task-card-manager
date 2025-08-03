@@ -21,7 +21,7 @@ const DEFAULT_TASKS = [
 // 任务管理器类
 class TaskManager {
     constructor() {
-        this.version = '4.3.6.3';
+        this.version = '4.3.6.4';
         this.defaultTasks = [...DEFAULT_TASKS];
         this.isInitialized = false;
         this.taskTimers = {}; // 任务计时器
