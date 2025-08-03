@@ -1,8 +1,0 @@
-﻿[2025-07-26 17:29:16] [34m=== Task Manager v4.2.1 Server Deployment Script v2.2 ===[0m
-[2025-07-26 17:29:16] Start time: 07/26/2025 17:29:16
-[2025-07-26 17:29:16] Log file: C:\AA\codebuddy\1\task-card-manager\deploy\deploy_log_20250726_172916.txt
-[2025-07-26 17:29:16] 
-[2025-07-26 17:29:16] Working directory: C:\AA\codebuddy\1\task-card-manager
-[2025-07-26 17:29:16] [33m[1/5] Creating deployment package...[0m
-[2025-07-26 17:29:16] [31mError: Password file not found: C:\AA\codebuddy\1\123[0m
-[2025-07-26 17:29:16] Please create the password file with server password

@@ -81,7 +81,7 @@
         
         <!-- 版本信息 -->
         <div class="version-info">
-            <span>v4.2.4 - 跨设备数据同步稳定版</span>
+            <span>v5.0.0 - 重构版</span>
         </div>
     </div>
 
@@ -91,32 +91,11 @@
         <div class="confetti"></div>
     </div>
 
-    <!-- 存储系统 -->
-    <script src="js/file-storage.js"></script>
-    <script src="js/simple-storage.js"></script>
-    
-    <!-- 跨浏览器数据同步 - 确保在存储系统之后加载 -->
-    <script src="js/cross-browser-sync.js"></script>
-    
-    <!-- 数据同步增强器 - 专门解决同步问题 -->
-    <script src="js/sync-enhancer.js"></script>
-    
-    <!-- 数据同步诊断工具 - 用于排查同步问题 -->
-    <script src="js/sync-diagnostic.js"></script>
-    
-    <!-- 数据一致性修复工具 - 确保在数据同步之后加载 -->
-    <script src="js/data-consistency-fix.js"></script>
-    
-    <!-- 主应用逻辑 -->
+    <!-- 核心逻辑 (v5.0 重构版) -->
     <script src="js/main.js"></script>
     
-    <!-- 文件导入导出功能 -->
-    <script src="js/import-export.js"></script>
-    
-    <!-- 添加调试链接 -->
-    <div style="position: fixed; bottom: 80px; right: 10px; font-size: 12px;">
-        <a href="sync-test.html" style="color: #3498db; text-decoration: none;">同步测试</a>
-    </div>
+    <!-- 智能同步逻辑 (v5.0 重构版) -->
+    <script src="js/sync.js"></script>
     
     <style>
         .version-info {
