@@ -1,0 +1,35 @@
+[10:31:25.89] 开始创建部署包... 
+版本: 4.4.2 
+时间戳: 20250804-103125 
+[10:31:25.89] 复制核心文件... 
+        1 file(s) copied.
+        1 file(s) copied.
+        1 file(s) copied.
+        1 file(s) copied.
+        1 file(s) copied.
+        1 file(s) copied.
+        1 file(s) copied.
+        1 file(s) copied.
+[10:31:25.92] 复制CSS文件... 
+..\css\animations.css
+..\css\cards.css
+..\css\edit.css
+..\css\focus.css
+..\css\main.css
+..\css\statistics.css
+..\css\sync-test.css
+..\css\today-tasks.css
+        8 file(s) copied.
+[10:31:25.94] 复制JavaScript文件... 
+        1 file(s) copied.
+        1 file(s) copied.
+        1 file(s) copied.
+        1 file(s) copied.
+        1 file(s) copied.
+[10:31:25.95] 复制API文件... 
+        1 file(s) copied.
+[10:31:25.95] 创建数据目录... 
+[10:31:25.97] 创建版本信息... 
+[10:31:25.98] 创建压缩包... 
+[10:31:29.98] 清理临时文件... 
+[10:31:30.00] 部署脚本执行完成 
