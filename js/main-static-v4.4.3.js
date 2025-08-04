@@ -266,6 +266,14 @@ class TaskManager {
 
     // 任务切换方法，供按钮调用
     async toggleTask(taskIndex) {
+        console.log(`[TaskManager] 切换任务状态: 任务${taskIndex}`);
+        
+        if (!this.isInitialized) {
+            console.error('[TaskManager] 系统尚未初始化完成');
+            alert('系统尚未初始化完成，请稍后再试');
+            return;
+        }
+        
         const completion = this.getTodayCompletion();
         const currentStatus = completion[taskIndex] || false;
         const newStatus = !currentStatus;
@@ -276,7 +284,7 @@ class TaskManager {
     updateVersionInfo() {
         const versionInfo = document.querySelector('.version-info span');
         if (versionInfo) {
-            versionInfo.textContent = `${this.version} - GitHub Pages静态版本`;
+            versionInfo.textContent = `${this.version} - GitHub Pages静态版本 - 数据保存在浏览器本地存储中`;
         }
     }
 
@@ -304,7 +312,12 @@ class TaskManager {
             // 再初始化UI
             this.initializeUI();
             
+            // 设置初始化完成标志
             this.isInitialized = true;
+            
+            // 设置全局变量供按钮调用
+            window.taskManager = this;
+            
             console.log('[TaskManager] 初始化完成！');
             
         } catch (error) {
@@ -313,6 +326,8 @@ class TaskManager {
             // 即使出错也要显示基本UI
             this.createDefaultData();
             this.initializeUI();
+            this.isInitialized = true;
+            window.taskManager = this;
         }
     }
 
@@ -366,10 +381,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     try {
         taskManager = new TaskManager();
-        window.taskManager = taskManager; // 供调试和按钮调用使用
-        
         await taskManager.initialize();
-        
         console.log('[App] 任务管理器初始化完成');
         
     } catch (error) {
@@ -379,14 +391,19 @@ document.addEventListener('DOMContentLoaded', async function() {
 
 // 全局函数，供HTML按钮调用
 function toggleTask(taskIndex) {
-    if (window.taskManager) {
+    console.log(`[Global] toggleTask调用: 任务${taskIndex}`);
+    if (window.taskManager && window.taskManager.isInitialized) {
         window.taskManager.toggleTask(taskIndex);
+    } else {
+        console.error('[Global] TaskManager未初始化或不可用');
+        alert('系统尚未初始化完成，请稍后再试');
     }
 }
 
 // 底部导航按钮功能（完整实现）
 function openFocusChallenge() {
-    if (!window.taskManager) {
+    console.log('[Nav] 专注力大挑战按钮点击');
+    if (!window.taskManager || !window.taskManager.isInitialized) {
         alert('系统尚未初始化完成，请稍后再试');
         return;
     }
@@ -397,7 +414,8 @@ function openFocusChallenge() {
 }
 
 function openEditTasks() {
-    if (!window.taskManager) {
+    console.log('[Nav] 任务编辑按钮点击');
+    if (!window.taskManager || !window.taskManager.isInitialized) {
         alert('系统尚未初始化完成，请稍后再试');
         return;
     }
@@ -412,7 +430,8 @@ function openEditTasks() {
 }
 
 function openTodayTasksManager() {
-    if (!window.taskManager) {
+    console.log('[Nav] 今日任务管理按钮点击');
+    if (!window.taskManager || !window.taskManager.isInitialized) {
         alert('系统尚未初始化完成，请稍后再试');
         return;
     }
@@ -446,7 +465,8 @@ function openTodayTasksManager() {
 }
 
 function openStatistics() {
-    if (!window.taskManager) {
+    console.log('[Nav] 任务统计按钮点击');
+    if (!window.taskManager || !window.taskManager.isInitialized) {
         alert('系统尚未初始化完成，请稍后再试');
         return;
     }
@@ -485,7 +505,8 @@ function openStatistics() {
 }
 
 function resetTasks() {
-    if (!window.taskManager) {
+    console.log('[Nav] 重置任务按钮点击');
+    if (!window.taskManager || !window.taskManager.isInitialized) {
         alert('系统尚未初始化完成，请稍后再试');
         return;
     }
@@ -502,3 +523,5 @@ function resetTasks() {
         alert('✅ 今日任务状态已重置！\n所有任务都已标记为未完成状态。');
     }
 }
+
+console.log('[Script] main-static-v4.4.3.js 加载完成');
