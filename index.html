@@ -3,392 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="儿童友好的每日任务管理工具，帮助培养良好习惯和专注力">
-    <meta name="keywords" content="任务管理,儿童教育,习惯养成,专注力训练">
-    <meta name="author" content="CodeBuddy">
-    <title>小久的任务卡片 - 儿童任务管理工具</title>
-    
-    <!-- PWA支持 -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#667eea">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="任务卡片">
-    
-    <!-- 图标 -->
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <link rel="apple-touch-icon" href="icon-192.svg">
+    <title>任务管理系统 v4.4.3</title>
     <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/cards.css">
-    <link rel="stylesheet" href="css/animations.css">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
 </head>
 <body>
     <div class="container">
-        <!-- 顶部信息区域 -->
+        <!-- 头部区域 -->
         <header class="header">
-            <div class="date-info">
-                <h1 id="current-date"></h1>
-                <div class="weather-icon">☀️</div>
-            </div>
-            <div class="user-greeting">
-                <h2>你好，<span id="username">小久</span>！</h2>
-                <p id="progress-message" class="progress-message">今天你还没开始任务，该加油喽！</p>
-            </div>
-            <div class="progress-bar">
-                <div class="progress-fill" id="progress-fill"></div>
-                <span class="progress-text" id="progress-text">0/8</span>
-            </div>
-            
-            <!-- 徽章显示区域 -->
-            <div class="badges-section" id="badges-section" style="display: none;">
-                <div class="badges-title">🎉 获得徽章</div>
-                <div class="badges-container" id="badges-container">
-                    <!-- 徽章将通过JavaScript动态生成 -->
+            <div class="header-content">
+                <div class="greeting-section">
+                    <div class="sun-icon">☀️</div>
+                    <h1 class="greeting">你好，<span class="username">小久</span>！</h1>
+                    <p class="date-info">
+                        <span id="current-date">加载中...</span>
+                    </p>
+                    <p class="motivation">今天你还没开始任务，该加油喽！</p>
+                </div>
+                
+                <div class="progress-section">
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div id="progress-fill" class="progress-fill"></div>
+                        </div>
+                        <div class="progress-info">
+                            <span id="progress-text" class="progress-text">0/8</span>
+                            <span class="progress-label">今日完成</span>
+                        </div>
+                    </div>
+                    <div id="progress-message" class="progress-message">
+                        今天还没开始任务，该加油喽！
+                    </div>
                 </div>
             </div>
         </header>
 
-        <!-- 任务卡片区域 -->
-        <main class="tasks-container">
-            <div class="tasks-grid" id="tasks-grid">
-                <!-- 任务卡片将通过JavaScript动态生成 -->
+        <!-- 主要内容区域 -->
+        <main class="main-content">
+            <div class="tasks-section">
+                <div class="section-header">
+                    <h2 class="section-title">今日任务</h2>
+                    <div class="task-count">
+                        <span id="task-count">8</span> 个任务
+                    </div>
+                </div>
+                
+                <div id="tasks-grid" class="tasks-grid">
+                    <!-- 任务卡片将通过JavaScript动态生成 -->
+                </div>
             </div>
         </main>
 
         <!-- 底部导航 -->
-        <footer class="footer">
+        <nav class="bottom-nav">
             <button class="nav-btn" onclick="openFocusChallenge()">
-                <span class="icon">⏰</span>
-                <span class="text">专注力大挑战</span>
+                <span class="nav-icon">🎯</span>
+                <span class="nav-text">专注力大挑战</span>
             </button>
             <button class="nav-btn" onclick="openEditTasks()">
-                <span class="icon">✏️</span>
-                <span class="text">任务编辑</span>
+                <span class="nav-icon">✏️</span>
+                <span class="nav-text">任务编辑</span>
             </button>
             <button class="nav-btn" onclick="openTodayTasksManager()">
-                <span class="icon">📋</span>
-                <span class="text">今日任务管理</span>
+                <span class="nav-icon">📋</span>
+                <span class="nav-text">今日任务管理</span>
             </button>
             <button class="nav-btn" onclick="openStatistics()">
-                <span class="icon">📊</span>
-                <span class="text">查看统计</span>
+                <span class="nav-icon">📊</span>
+                <span class="nav-text">任务统计</span>
             </button>
             <button class="nav-btn" onclick="resetTasks()">
-                <span class="icon">🔄</span>
-                <span class="text">重置今日</span>
+                <span class="nav-icon">🔄</span>
+                <span class="nav-text">重置任务</span>
             </button>
-        </footer>
-        
+        </nav>
+
         <!-- 版本信息 -->
-        <div class="version-info">
-            <span>v4.4.2 - 服务器串行更新机制</span>
-        </div>
+        <footer class="footer">
+            <div class="version-info">
+                <span>v4.4.3 - GitHub Pages静态版本 - 数据保存在浏览器本地存储中</span>
+            </div>
+        </footer>
     </div>
 
-    <!-- 庆祝动画 -->
-    <div class="celebration" id="celebration">
-        <div class="celebration-text">太棒了！🎉</div>
-        <div class="confetti"></div>
-    </div>
-
-    <!-- 环境检测和自动选择脚本 -->
+    <!-- 环境检测和脚本加载 -->
     <script>
-        // 检测当前环境并选择合适的JavaScript版本
+        // 环境检测和自动选择脚本
         function detectEnvironment() {
             const hostname = window.location.hostname;
             const protocol = window.location.protocol;
             
-            console.log('[环境检测] 当前域名:', hostname);
-            console.log('[环境检测] 当前协议:', protocol);
-            
             // GitHub Pages检测
             if (hostname.includes('github.io') || hostname.includes('github.com')) {
-                console.log('[环境检测] 检测到GitHub Pages环境，使用静态版本');
-                return 'static';
+                return 'github-pages';
             }
             
             // 本地开发环境检测
             if (hostname === 'localhost' || hostname === '127.0.0.1' || protocol === 'file:') {
-                console.log('[环境检测] 检测到本地环境，尝试服务器版本');
                 return 'local';
             }
             
-            // 其他服务器环境
-            console.log('[环境检测] 检测到服务器环境，使用服务器版本');
+            // 服务器环境
             return 'server';
         }
         
-        // 动态加载对应的JavaScript文件
-        function loadAppropriateScript() {
+        // 根据环境加载对应的JavaScript文件
+        function loadEnvironmentScript() {
             const environment = detectEnvironment();
-            let scriptSrc;
+            console.log('[Environment] 检测到环境:', environment);
             
-            if (environment === 'static') {
-                    scriptSrc = 'js/main-static-fixed.js';
-                // 更新页面提示信息
-                updatePageForStaticVersion();
-            } else {
-                scriptSrc = 'js/main.js';
+            let scriptSrc;
+            switch (environment) {
+                case 'github-pages':
+                    scriptSrc = 'js/main-static-v4.4.3.js';
+                    console.log('[Environment] 使用GitHub Pages静态版本 v4.4.3');
+                    break;
+                case 'local':
+                case 'server':
+                default:
+                    scriptSrc = 'js/main.js';
+                    console.log('[Environment] 使用完整服务器版本');
+                    break;
             }
             
-            console.log('[脚本加载] 加载脚本:', scriptSrc);
-            
+            // 动态加载脚本
             const script = document.createElement('script');
             script.src = scriptSrc;
             script.onload = function() {
-                console.log('[脚本加载] 脚本加载成功:', scriptSrc);
+                console.log('[Environment] 脚本加载完成:', scriptSrc);
             };
             script.onerror = function() {
-                console.error('[脚本加载] 脚本加载失败:', scriptSrc);
-                // 如果服务器版本加载失败，尝试静态版本
-                if (scriptSrc === 'js/main.js') {
-                    console.log('[脚本加载] 回退到静态版本');
-                    loadStaticVersion();
+                console.error('[Environment] 脚本加载失败:', scriptSrc);
+                // 如果主脚本加载失败，尝试加载静态版本
+                if (scriptSrc !== 'js/main-static-v4.4.3.js') {
+                    console.log('[Environment] 尝试加载静态版本作为备用');
+                    const fallbackScript = document.createElement('script');
+                    fallbackScript.src = 'js/main-static-v4.4.3.js';
+                    document.head.appendChild(fallbackScript);
                 }
             };
-            
             document.head.appendChild(script);
-        }
-        
-        // 加载静态版本
-        function loadStaticVersion() {
-            const script = document.createElement('script');
-            script.src = 'js/main-static.js';
-            document.head.appendChild(script);
-            updatePageForStaticVersion();
-        }
-        
-        // 为静态版本更新页面内容
-        function updatePageForStaticVersion() {
-            // 添加静态版本提示
-            const header = document.querySelector('.header');
-            if (header && !header.querySelector('.static-notice')) {
-                const notice = document.createElement('div');
-                notice.className = 'static-notice';
-                notice.innerHTML = '📌 GitHub Pages静态版本 - 数据保存在浏览器本地存储中';
-                notice.style.cssText = `
-                    background: #e3f2fd;
-                    border: 1px solid #2196f3;
-                    border-radius: 8px;
-                    padding: 12px;
-                    margin: 10px 0;
-                    color: #1565c0;
-                    font-size: 14px;
-                    text-align: center;
-                `;
-                header.appendChild(notice);
-            }
-            
-            // 更新版本信息
-            const versionInfo = document.querySelector('.version-info span');
-            if (versionInfo) {
-                versionInfo.textContent = 'v4.4.2 - GitHub Pages静态版本';
-            }
         }
         
         // 页面加载完成后执行环境检测
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('[App] 页面加载完成，开始环境检测...');
-            loadAppropriateScript();
-        });
+        document.addEventListener('DOMContentLoaded', loadEnvironmentScript);
     </script>
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="儿童友好的每日任务管理工具，帮助培养良好习惯和专注力">
-    <meta name="keywords" content="任务管理,儿童教育,习惯养成,专注力训练">
-    <meta name="author" content="CodeBuddy">
-    <title>小久的任务卡片 - 儿童任务管理工具</title>
-    
-    <!-- PWA支持 -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#667eea">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="任务卡片">
-    
-    <!-- 图标 -->
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <link rel="apple-touch-icon" href="icon-192.svg">
-    <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/cards.css">
-    <link rel="stylesheet" href="css/animations.css">
-</head>
-<body>
-    <div class="container">
-        <!-- 顶部信息区域 -->
-        <header class="header">
-            <div class="date-info">
-                <h1 id="current-date"></h1>
-                <div class="weather-icon">☀️</div>
-            </div>
-            <div class="user-greeting">
-                <h2>你好，<span id="username">小久</span>！</h2>
-                <p id="progress-message" class="progress-message">今天你还没开始任务，该加油喽！</p>
-            </div>
-            <div class="progress-bar">
-                <div class="progress-fill" id="progress-fill"></div>
-                <span class="progress-text" id="progress-text">0/8</span>
-            </div>
-            
-            <!-- 徽章显示区域 -->
-            <div class="badges-section" id="badges-section" style="display: none;">
-                <div class="badges-title">🎉 获得徽章</div>
-                <div class="badges-container" id="badges-container">
-                    <!-- 徽章将通过JavaScript动态生成 -->
-                </div>
-            </div>
-        </header>
-
-        <!-- 任务卡片区域 -->
-        <main class="tasks-container">
-            <div class="tasks-grid" id="tasks-grid">
-                <!-- 任务卡片将通过JavaScript动态生成 -->
-            </div>
-        </main>
-
-        <!-- 底部导航 -->
-        <footer class="footer">
-            <button class="nav-btn" onclick="openFocusChallenge()">
-                <span class="icon">⏰</span>
-                <span class="text">专注力大挑战</span>
-            </button>
-            <button class="nav-btn" onclick="openEditTasks()">
-                <span class="icon">✏️</span>
-                <span class="text">任务编辑</span>
-            </button>
-            <button class="nav-btn" onclick="openTodayTasksManager()">
-                <span class="icon">📋</span>
-                <span class="text">今日任务管理</span>
-            </button>
-            <button class="nav-btn" onclick="openStatistics()">
-                <span class="icon">📊</span>
-                <span class="text">查看统计</span>
-            </button>
-            <button class="nav-btn" onclick="resetTasks()">
-                <span class="icon">🔄</span>
-                <span class="text">重置今日</span>
-            </button>
-        </footer>
-        
-        <!-- 版本信息 -->
-        <div class="version-info">
-            <span>v4.4.2 - 服务器串行更新机制</span>
-        </div>
-    </div>
-
-    <!-- 庆祝动画 -->
-    <div class="celebration" id="celebration">
-        <div class="celebration-text">太棒了！🎉</div>
-        <div class="confetti"></div>
-    </div>
-
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="儿童友好的每日任务管理工具，帮助培养良好习惯和专注力">
-    <meta name="keywords" content="任务管理,儿童教育,习惯养成,专注力训练">
-    <meta name="author" content="CodeBuddy">
-    <title>小久的任务卡片 - 儿童任务管理工具</title>
-    
-    <!-- PWA支持 -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#667eea">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="任务卡片">
-    
-    <!-- 图标 -->
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <link rel="apple-touch-icon" href="icon-192.svg">
-    <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/cards.css">
-    <link rel="stylesheet" href="css/animations.css">
-</head>
-<body>
-    <div class="container">
-        <!-- 顶部信息区域 -->
-        <header class="header">
-            <div class="date-info">
-                <h1 id="current-date"></h1>
-                <div class="weather-icon">☀️</div>
-            </div>
-            <div class="user-greeting">
-                <h2>你好，<span id="username">小久</span>！</h2>
-                <p id="progress-message" class="progress-message">今天你还没开始任务，该加油喽！</p>
-            </div>
-            <div class="progress-bar">
-                <div class="progress-fill" id="progress-fill"></div>
-                <span class="progress-text" id="progress-text">0/8</span>
-            </div>
-            
-            <!-- 徽章显示区域 -->
-            <div class="badges-section" id="badges-section" style="display: none;">
-                <div class="badges-title">🎉 获得徽章</div>
-                <div class="badges-container" id="badges-container">
-                    <!-- 徽章将通过JavaScript动态生成 -->
-                </div>
-            </div>
-        </header>
-
-        <!-- 任务卡片区域 -->
-        <main class="tasks-container">
-            <div class="tasks-grid" id="tasks-grid">
-                <!-- 任务卡片将通过JavaScript动态生成 -->
-            </div>
-        </main>
-
-        <!-- 底部导航 -->
-        <footer class="footer">
-            <button class="nav-btn" onclick="openFocusChallenge()">
-                <span class="icon">⏰</span>
-                <span class="text">专注力大挑战</span>
-            </button>
-            <button class="nav-btn" onclick="openEditTasks()">
-                <span class="icon">✏️</span>
-                <span class="text">任务编辑</span>
-            </button>
-            <button class="nav-btn" onclick="openTodayTasksManager()">
-                <span class="icon">📋</span>
-                <span class="text">今日任务管理</span>
-            </button>
-            <button class="nav-btn" onclick="openStatistics()">
-                <span class="icon">📊</span>
-                <span class="text">查看统计</span>
-            </button>
-            <button class="nav-btn" onclick="resetTasks()">
-                <span class="icon">🔄</span>
-                <span class="text">重置今日</span>
-            </button>
-        </footer>
-        
-        <!-- 版本信息 -->
-        <div class="version-info">
-            <span>v4.4.2 - 服务器串行更新机制</span>
-        </div>
-    </div>
-
-    <!-- 庆祝动画 -->
-    <div class="celebration" id="celebration">
-        <div class="celebration-text">太棒了！🎉</div>
-        <div class="confetti"></div>
-    </div>
-
-    <!-- 核心逻辑 (v4.3.6.1) - 独立版本 -->
-    <script src="js/main.js"></script>
-    
-    <style>
-        .version-info {
-            text-align: center;
-            font-size: 12px;
-            color: #888;
-            margin-top: 10px;
-            padding-bottom: 5px;
-        }
-    </style>
 </body>
 </html>

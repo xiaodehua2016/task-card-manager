@@ -1,7 +1,7 @@
-// 任务管理系统核心逻辑 v4.4.2
+// 任务管理系统核心逻辑 v4.4.3
 // 实现服务器主导的串行更新机制
 
-console.log('开始加载任务管理系统 v4.4.2...');
+console.log('开始加载任务管理系统 v4.4.3...');
 
 // 全局变量
 let taskManagerInstance = null;
@@ -9,7 +9,7 @@ let taskManagerInstance = null;
 // 任务管理器类
 class TaskManager {
     constructor() {
-        this.version = '4.4.2';
+        this.version = '4.4.3';
         this.isInitialized = false;
         this.taskTimers = {}; // 任务计时器
         this.clientId = this.generateClientId();
@@ -622,4 +622,4 @@ window.debugTaskManager = () => {
     console.log('计时器:', taskManagerInstance.taskTimers);
 };
 
-console.log('任务管理系统 v4.4.2 加载完成');
+console.log('任务管理系统 v4.4.3 加载完成');
