@@ -1,7 +1,7 @@
-// 任务管理系统核心逻辑 v4.4.1
+// 任务管理系统核心逻辑 v4.4.2
 // 实现服务器主导的串行更新机制
 
-console.log('开始加载任务管理系统 v4.4.1...');
+console.log('开始加载任务管理系统 v4.4.2...');
 
 // 全局变量
 let taskManagerInstance = null;
@@ -19,14 +19,31 @@ class TaskManager {
         
         console.log(`TaskManager v${this.version} 构造函数执行，客户端ID: ${this.clientId}`);
         
-        // 初始化数据
-        this.initializeData();
-        
-        // 等待DOM加载完成后初始化界面
+        // 等待DOM加载完成后初始化
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => this.initializeUI());
+            document.addEventListener('DOMContentLoaded', () => this.initialize());
         } else {
-            setTimeout(() => this.initializeUI(), 0);
+            setTimeout(() => this.initialize(), 0);
+        }
+    }
+
+    // 完整初始化流程
+    async initialize() {
+        console.log('开始完整初始化流程...');
+        
+        try {
+            // 先初始化数据
+            await this.initializeData();
+            
+            // 再初始化界面
+            this.initializeUI();
+            
+            console.log('完整初始化流程完成');
+        } catch (error) {
+            console.error('初始化过程中出错:', error);
+            // 即使出错也要显示界面，使用默认数据
+            this.createDefaultData();
+            this.initializeUI();
         }
     }
 
@@ -52,25 +69,30 @@ class TaskManager {
     async initializeData() {
         console.log('初始化数据...');
         
+        // 先创建默认数据，确保界面能正常显示
+        this.createDefaultData();
+        
         try {
-            // 从服务器获取最新数据
+            // 尝试从服务器获取最新数据
+            console.log('尝试从服务器获取数据...');
             const response = await this.sendToServer({
                 action: 'getData',
                 clientId: this.clientId,
                 userId: 'xiaojiu'
             });
             
-            if (response.success) {
+            if (response && response.success && response.data) {
                 this.serverData = response.data;
-                console.log('从服务器加载数据成功');
+                console.log('从服务器加载数据成功:', response.data);
             } else {
-                console.warn('从服务器加载数据失败，使用默认数据');
-                this.createDefaultData();
+                console.warn('服务器返回数据无效，使用默认数据');
             }
         } catch (error) {
-            console.error('初始化数据失败:', error);
-            this.createDefaultData();
+            console.error('从服务器获取数据失败:', error);
+            console.log('将使用默认数据继续运行');
         }
+        
+        console.log('数据初始化完成，当前数据:', this.serverData);
     }
 
     // 创建默认数据
@@ -600,4 +622,4 @@ window.debugTaskManager = () => {
     console.log('计时器:', taskManagerInstance.taskTimers);
 };
 
-console.log('任务管理系统 v4.4.1 加载完成');
+console.log('任务管理系统 v4.4.2 加载完成');

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>任务管理系统调试页面 v4.4.2</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .debug-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .debug-title {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .debug-info {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success {
+            color: #155724;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-container">
+        <h1 class="debug-title">任务管理系统调试页面 v4.4.2</h1>
+        
+        <div class="debug-container">
+            <h2>系统信息</h2>
+            <div id="system-info" class="debug-info">正在加载...</div>
+        </div>
+
+        <div class="debug-container">
+            <h2>API测试</h2>
+            <button class="test-button" onclick="testAPI()">测试API连接</button>
+            <button class="test-button" onclick="testGetData()">测试获取数据</button>
+            <button class="test-button" onclick="testUpdateTask()">测试更新任务</button>
+            <div id="api-result" class="debug-info"></div>
+        </div>
+
+        <div class="debug-container">
+            <h2>数据状态</h2>
+            <button class="test-button" onclick="showCurrentData()">显示当前数据</button>
+            <div id="data-display" class="debug-info"></div>
+        </div>
+
+        <div class="debug-container">
+            <h2>任务管理器状态</h2>
+            <button class="test-button" onclick="checkTaskManager()">检查TaskManager</button>
+            <div id="taskmanager-status" class="debug-info"></div>
+        </div>
+    </div>
+
+    <script>
+        // 显示系统信息
+        function showSystemInfo() {
+            const info = {
+                浏览器: navigator.userAgent,
+                当前时间: new Date().toLocaleString('zh-CN'),
+                页面URL: window.location.href,
+                文档状态: document.readyState
+            };
+            
+            document.getElementById('system-info').textContent = JSON.stringify(info, null, 2);
+        }
+
+        // 测试API连接
+        async function testAPI() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.innerHTML = '正在测试API连接...';
+            
+            try {
+                const response = await fetch('api/serial-update.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'getData',
+                        clientId: 'debug_test',
+                        userId: 'xiaojiu'
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP错误: ${response.status}`);
+                }
+
+                const data = await response.json();
+                resultDiv.innerHTML = `<div class="success">API连接成功！</div><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">API连接失败: ${error.message}</div>`;
+            }
+        }
+
+        // 测试获取数据
+        async function testGetData() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.innerHTML = '正在获取数据...';
+            
+            try {
+                const response = await fetch('api/serial-update.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'getData',
+                        clientId: 'debug_test',
+                        userId: 'xiaojiu'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    const userData = data.data.users.xiaojiu;
+                    const today = new Date().toISOString().split('T')[0];
+                    const todayTasks = userData.dailyCompletion[today];
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">数据获取成功！</div>
+                        <div><strong>用户名:</strong> ${userData.username}</div>
+                        <div><strong>任务数量:</strong> ${userData.tasks.length}</div>
+                        <div><strong>今日任务状态:</strong> ${todayTasks ? '已初始化' : '未初始化'}</div>
+                        <div><strong>任务列表:</strong></div>
+                        <pre>${JSON.stringify(userData.tasks, null, 2)}</pre>
+                        ${todayTasks ? `<div><strong>今日完成状态:</strong></div><pre>${JSON.stringify(todayTasks.completion, null, 2)}</pre>` : ''}
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">获取数据失败: ${data.message}</div>`;
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">获取数据出错: ${error.message}</div>`;
+            }
+        }
+
+        // 测试更新任务
+        async function testUpdateTask() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.innerHTML = '正在测试任务更新...';
+            
+            try {
+                const response = await fetch('api/serial-update.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'updateTask',
+                        taskIndex: 0,
+                        completed: true,
+                        clientId: 'debug_test',
+                        userId: 'xiaojiu',
+                        timestamp: Date.now()
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `<div class="success">任务更新成功！</div><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">任务更新失败: ${data.message}</div>`;
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">任务更新出错: ${error.message}</div>`;
+            }
+        }
+
+        // 显示当前数据
+        function showCurrentData() {
+            const dataDiv = document.getElementById('data-display');
+            
+            if (window.taskManager && window.taskManager.serverData) {
+                dataDiv.innerHTML = `<div class="success">TaskManager数据已加载</div><pre>${JSON.stringify(window.taskManager.serverData, null, 2)}</pre>`;
+            } else {
+                dataDiv.innerHTML = `<div class="error">TaskManager数据未加载或不存在</div>`;
+            }
+        }
+
+        // 检查TaskManager状态
+        function checkTaskManager() {
+            const statusDiv = document.getElementById('taskmanager-status');
+            
+            const status = {
+                TaskManager存在: !!window.taskManager,
+                版本号: window.taskManager?.version || '未知',
+                初始化状态: window.taskManager?.isInitialized || false,
+                服务器数据: !!window.taskManager?.serverData,
+                客户端ID: window.taskManager?.clientId || '未知'
+            };
+            
+            if (window.taskManager && window.taskManager.serverData) {
+                const userData = window.taskManager.getUserData();
+                status.用户名 = userData.username || '未知';
+                status.任务数量 = userData.tasks?.length || 0;
+                
+                const today = new Date().toISOString().split('T')[0];
+                const todayCompletion = window.taskManager.getTodayCompletion();
+                status.今日任务状态 = todayCompletion.length > 0 ? '已加载' : '未加载';
+                status.完成任务数 = todayCompletion.filter(Boolean).length;
+            }
+            
+            statusDiv.innerHTML = `<pre>${JSON.stringify(status, null, 2)}</pre>`;
+        }
+
+        // 页面加载完成后显示系统信息
+        document.addEventListener('DOMContentLoaded', function() {
+            showSystemInfo();
+            
+            // 等待一秒后检查TaskManager
+            setTimeout(() => {
+                checkTaskManager();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

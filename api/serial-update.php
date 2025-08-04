@@ -1,6 +1,6 @@
 <?php
 /**
- * 任务管理系统串行更新API v4.4.1
+ * 任务管理系统串行更新API v4.4.2
  * 实现服务器主导的串行更新机制，确保数据一致性
  */
 
@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 // 配置文件路径
 $dataDir = __DIR__ . '/../data';
-$dataFile = $dataDir . '/tasks_v4.4.1.json';
+$dataFile = $dataDir . '/tasks_v4.4.2.json';
 $lockFile = $dataDir . '/update.lock';
 $logFile = $dataDir . '/update_log.txt';
 $errorLogFile = $dataDir . '/error_log.txt';
