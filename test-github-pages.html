@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Pages环境测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-result {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>GitHub Pages环境测试 v4.4.2</h1>
+        
+        <div class="test-container">
+            <h2>环境检测</h2>
+            <div id="env-info"></div>
+        </div>
+
+        <div class="test-container">
+            <h2>静态版本功能测试</h2>
+            <button class="test-button" onclick="testStaticVersion()">测试静态版本</button>
+            <button class="test-button" onclick="testLocalStorage()">测试本地存储</button>
+            <button class="test-button" onclick="clearLocalData()">清除本地数据</button>
+            <div id="test-results"></div>
+        </div>
+
+        <div class="test-container">
+            <h2>任务管理器测试</h2>
+            <button class="test-button" onclick="createTestTaskManager()">创建测试任务管理器</button>
+            <button class="test-button" onclick="testTaskOperations()">测试任务操作</button>
+            <div id="taskmanager-results"></div>
+        </div>
+
+        <div class="test-container">
+            <h2>跳转到主页面</h2>
+            <button class="test-button" onclick="goToMainPage()">访问主页面</button>
+            <button class="test-button" onclick="goToStaticPage()">访问静态版本</button>
+        </div>
+    </div>
+
+    <script>
+        // 显示环境信息
+        function showEnvironmentInfo() {
+            const info = {
+                域名: window.location.hostname,
+                协议: window.location.protocol,
+                完整URL: window.location.href,
+                用户代理: navigator.userAgent,
+                是否GitHub_Pages: window.location.hostname.includes('github.io'),
+                本地存储支持: typeof(Storage) !== "undefined"
+            };
+            
+            document.getElementById('env-info').innerHTML = 
+                '<pre>' + JSON.stringify(info, null, 2) + '</pre>';
+        }
+
+        // 测试静态版本
+        function testStaticVersion() {
+            const results = document.getElementById('test-results');
+            results.innerHTML = '正在测试静态版本...';
+            
+            try {
+                // 动态加载静态版本脚本
+                const script = document.createElement('script');
+                script.src = 'js/main-static.js';
+                script.onload = function() {
+                    results.innerHTML += '<div class="success">✅ 静态版本脚本加载成功</div>';
+                    
+                    // 测试TaskManager类
+                    setTimeout(() => {
+                        if (typeof TaskManager !== 'undefined') {
+                            results.innerHTML += '<div class="success">✅ TaskManager类可用</div>';
+                            
+                            // 创建测试实例
+                            const testManager = new TaskManager();
+                            results.innerHTML += '<div class="success">✅ TaskManager实例创建成功</div>';
+                            results.innerHTML += '<div class="info">版本: ' + testManager.version + '</div>';
+                        } else {
+                            results.innerHTML += '<div class="error">❌ TaskManager类不可用</div>';
+                        }
+                    }, 500);
+                };
+                script.onerror = function() {
+                    results.innerHTML += '<div class="error">❌ 静态版本脚本加载失败</div>';
+                };
+                document.head.appendChild(script);
+                
+            } catch (error) {
+                results.innerHTML += '<div class="error">❌ 测试出错: ' + error.message + '</div>';
+            }
+        }
+
+        // 测试本地存储
+        function testLocalStorage() {
+            const results = document.getElementById('test-results');
+            
+            try {
+                // 测试写入
+                const testData = {
+                    tasks: [
+                        { id: 1, name: '测试任务1', category: '测试', priority: 'high' },
+                        { id: 2, name: '测试任务2', category: '测试', priority: 'medium' }
+                    ],
+                    userId: 'test_user',
+                    lastUpdate: new Date().toISOString()
+                };
+                
+                localStorage.setItem('taskManager_data', JSON.stringify(testData));
+                results.innerHTML += '<div class="success">✅ 本地存储写入成功</div>';
+                
+                // 测试读取
+                const savedData = localStorage.getItem('taskManager_data');
+                if (savedData) {
+                    const parsed = JSON.parse(savedData);
+                    results.innerHTML += '<div class="success">✅ 本地存储读取成功</div>';
+                    results.innerHTML += '<div class="info">保存的任务数量: ' + parsed.tasks.length + '</div>';
+                } else {
+                    results.innerHTML += '<div class="error">❌ 本地存储读取失败</div>';
+                }
+                
+                // 测试今日任务状态
+                const today = new Date().toISOString().split('T')[0];
+                const todayKey = `completion_${today}`;
+                const todayCompletion = [false, true]; // 第一个未完成，第二个完成
+                localStorage.setItem(todayKey, JSON.stringify(todayCompletion));
+                results.innerHTML += '<div class="success">✅ 今日任务状态保存成功</div>';
+                
+            } catch (error) {
+                results.innerHTML += '<div class="error">❌ 本地存储测试失败: ' + error.message + '</div>';
+            }
+        }
+
+        // 清除本地数据
+        function clearLocalData() {
+            const results = document.getElementById('test-results');
+            
+            try {
+                // 清除任务数据
+                localStorage.removeItem('taskManager_data');
+                
+                // 清除今日完成状态
+                const today = new Date().toISOString().split('T')[0];
+                const todayKey = `completion_${today}`;
+                localStorage.removeItem(todayKey);
+                
+                results.innerHTML += '<div class="success">✅ 本地数据清除成功</div>';
+                
+            } catch (error) {
+                results.innerHTML += '<div class="error">❌ 清除数据失败: ' + error.message + '</div>';
+            }
+        }
+
+        // 创建测试任务管理器
+        function createTestTaskManager() {
+            const results = document.getElementById('taskmanager-results');
+            results.innerHTML = '正在创建测试任务管理器...';
+            
+            try {
+                if (typeof TaskManager === 'undefined') {
+                    results.innerHTML += '<div class="error">❌ TaskManager类不可用，请先测试静态版本</div>';
+                    return;
+                }
+                
+                window.testTaskManager = new TaskManager();
+                results.innerHTML += '<div class="success">✅ 测试任务管理器创建成功</div>';
+                
+                // 初始化数据
+                window.testTaskManager.initializeData().then(() => {
+                    results.innerHTML += '<div class="success">✅ 数据初始化完成</div>';
+                    results.innerHTML += '<div class="info">任务数量: ' + window.testTaskManager.tasks.length + '</div>';
+                    
+                    // 显示任务列表
+                    const taskList = window.testTaskManager.tasks.map(task => 
+                        `${task.name} (${task.category})`
+                    ).join(', ');
+                    results.innerHTML += '<div class="info">任务列表: ' + taskList + '</div>';
+                });
+                
+            } catch (error) {
+                results.innerHTML += '<div class="error">❌ 创建失败: ' + error.message + '</div>';
+            }
+        }
+
+        // 测试任务操作
+        function testTaskOperations() {
+            const results = document.getElementById('taskmanager-results');
+            
+            if (!window.testTaskManager) {
+                results.innerHTML += '<div class="error">❌ 请先创建测试任务管理器</div>';
+                return;
+            }
+            
+            try {
+                // 测试更新任务状态
+                window.testTaskManager.updateTaskStatus(0, true).then((result) => {
+                    if (result.success) {
+                        results.innerHTML += '<div class="success">✅ 任务状态更新成功</div>';
+                        
+                        // 获取统计信息
+                        const stats = window.testTaskManager.getStats();
+                        results.innerHTML += '<div class="info">完成任务: ' + stats.completedTasks + '/' + stats.totalTasks + '</div>';
+                        results.innerHTML += '<div class="info">完成率: ' + stats.completionRate + '%</div>';
+                    } else {
+                        results.innerHTML += '<div class="error">❌ 任务状态更新失败</div>';
+                    }
+                });
+                
+            } catch (error) {
+                results.innerHTML += '<div class="error">❌ 操作测试失败: ' + error.message + '</div>';
+            }
+        }
+
+        // 跳转到主页面
+        function goToMainPage() {
+            window.open('index.html', '_blank');
+        }
+
+        // 跳转到静态版本页面
+        function goToStaticPage() {
+            window.open('index-static.html', '_blank');
+        }
+
+        // 页面加载完成后显示环境信息
+        document.addEventListener('DOMContentLoaded', function() {
+            showEnvironmentInfo();
+        });
+    </script>
+</body>
+</html>
