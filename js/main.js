@@ -1,39 +1,26 @@
-// 任务管理系统核心逻辑 v4.3.6.3
-// 修复：恢复任务计时功能 + 实现跨浏览器数据同步
+// 任务管理系统核心逻辑 v4.4.1
+// 实现服务器主导的串行更新机制
 
-console.log('开始加载任务管理系统 v4.3.6.3...');
+console.log('开始加载任务管理系统 v4.4.1...');
 
 // 全局变量
 let taskManagerInstance = null;
 
-// 默认任务列表
-const DEFAULT_TASKS = [
-    '学而思数感小超市',
-    '斑马思维', 
-    '核桃编程（学生端）',
-    '英语阅读',
-    '硬笔写字（30分钟）',
-    '悦乐达打卡/作业',
-    '暑假生活作业',
-    '体育/运动（迪卡侬）'
-];
-
 // 任务管理器类
 class TaskManager {
     constructor() {
-        this.version = '4.3.6.4';
-        this.defaultTasks = [...DEFAULT_TASKS];
+        this.version = '4.4.1';
         this.isInitialized = false;
         this.taskTimers = {}; // 任务计时器
-        this.syncInterval = null; // 同步定时器
+        this.clientId = this.generateClientId();
+        this.updateQueue = []; // 更新队列
+        this.isProcessingQueue = false;
+        this.serverData = null; // 服务器数据缓存
         
-        console.log(`TaskManager v${this.version} 构造函数执行`);
+        console.log(`TaskManager v${this.version} 构造函数执行，客户端ID: ${this.clientId}`);
         
-        // 立即初始化数据
+        // 初始化数据
         this.initializeData();
-        
-        // 启动数据同步
-        this.startDataSync();
         
         // 等待DOM加载完成后初始化界面
         if (document.readyState === 'loading') {
@@ -43,141 +30,72 @@ class TaskManager {
         }
     }
 
+    // 生成客户端ID
+    generateClientId() {
+        const browser = this.getBrowserInfo();
+        const timestamp = Date.now();
+        const random = Math.random().toString(36).substr(2, 6);
+        return `${browser}_${timestamp}_${random}`;
+    }
+
+    // 获取浏览器信息
+    getBrowserInfo() {
+        const ua = navigator.userAgent;
+        if (ua.includes('Chrome')) return 'chrome';
+        if (ua.includes('Firefox')) return 'firefox';
+        if (ua.includes('Safari')) return 'safari';
+        if (ua.includes('Edge')) return 'edge';
+        return 'unknown';
+    }
+
     // 初始化数据
-    initializeData() {
+    async initializeData() {
         console.log('初始化数据...');
         
-        const today = new Date().toISOString().split('T')[0];
-        let data = this.loadData();
-        
-        // 如果没有数据或数据不完整，创建默认数据
-        if (!data || !data.tasks || !Array.isArray(data.tasks) || data.tasks.length === 0) {
-            console.log('创建默认数据');
-            data = {
-                username: '小久',
-                tasks: [...this.defaultTasks],
-                completionHistory: {},
-                taskTimes: {}, // 任务计时记录
-                focusRecords: {},
-                lastUpdateTime: Date.now(),
-                version: this.version
-            };
-        }
-
-        // 确保今日完成状态存在
-        if (!data.completionHistory) {
-            data.completionHistory = {};
-        }
-        
-        if (!data.completionHistory[today]) {
-            data.completionHistory[today] = new Array(data.tasks.length).fill(false);
-        }
-
-        // 确保任务计时记录存在
-        if (!data.taskTimes) {
-            data.taskTimes = {};
-        }
-
-        // 确保数据长度匹配
-        if (data.completionHistory[today].length !== data.tasks.length) {
-            data.completionHistory[today] = new Array(data.tasks.length).fill(false);
-        }
-
-        // 保存数据
-        this.saveData(data);
-        
-        console.log('数据初始化完成:', data);
-        return data;
-    }
-
-    // 启动数据同步
-    startDataSync() {
-        console.log('启动跨浏览器数据同步...');
-        
-        // 每5秒同步一次数据
-        this.syncInterval = setInterval(() => {
-            this.syncDataWithServer();
-        }, 5000);
-        
-        // 页面关闭时保存数据
-        window.addEventListener('beforeunload', () => {
-            this.syncDataWithServer();
-        });
-    }
-
-    // 与服务器同步数据
-    async syncDataWithServer() {
         try {
-            const localData = this.loadData();
-            if (!localData) return;
-
-            // 发送数据到服务器
-            const response = await fetch('api/data-sync.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    action: 'sync',
-                    data: localData,
-                    timestamp: Date.now()
-                })
+            // 从服务器获取最新数据
+            const response = await this.sendToServer({
+                action: 'getData',
+                clientId: this.clientId,
+                userId: 'xiaojiu'
             });
-
-            if (response.ok) {
-                const result = await response.json();
-                
-                if (result.success && result.data) {
-                    // 检查服务器数据是否更新
-                    if (result.data.lastUpdateTime > localData.lastUpdateTime) {
-                        console.log('发现服务器数据更新，同步到本地');
-                        
-                        // 合并数据（保留本地未完成的任务状态）
-                        const mergedData = this.mergeData(localData, result.data);
-                        this.saveData(mergedData);
-                        
-                        // 重新渲染界面
-                        if (this.isInitialized) {
-                            this.renderTasks();
-                            this.updateProgress();
-                        }
-                    }
-                }
+            
+            if (response.success) {
+                this.serverData = response.data;
+                console.log('从服务器加载数据成功');
+            } else {
+                console.warn('从服务器加载数据失败，使用默认数据');
+                this.createDefaultData();
             }
         } catch (error) {
-            console.warn('数据同步失败:', error);
+            console.error('初始化数据失败:', error);
+            this.createDefaultData();
         }
     }
 
-    // 合并本地和服务器数据
-    mergeData(localData, serverData) {
-        const today = new Date().toISOString().split('T')[0];
-        
-        // 以服务器数据为基础
-        const mergedData = { ...serverData };
-        
-        // 保留本地的今日完成状态（如果本地更新时间更新）
-        if (localData.completionHistory && localData.completionHistory[today]) {
-            if (!mergedData.completionHistory) {
-                mergedData.completionHistory = {};
+    // 创建默认数据
+    createDefaultData() {
+        this.serverData = {
+            version: this.version,
+            users: {
+                xiaojiu: {
+                    username: '小久',
+                    tasks: [
+                        '学而思数感小超市',
+                        '斑马思维',
+                        '核桃编程（学生端）',
+                        '英语阅读',
+                        '硬笔写字（30分钟）',
+                        '悦乐达打卡/作业',
+                        '暑假生活作业',
+                        '体育/运动（迪卡侬）'
+                    ],
+                    dailyCompletion: {},
+                    taskTiming: {},
+                    focusRecords: []
+                }
             }
-            
-            // 如果本地今日数据更新，使用本地数据
-            const localTodayTime = localData.lastUpdateTime || 0;
-            const serverTodayTime = serverData.lastUpdateTime || 0;
-            
-            if (localTodayTime > serverTodayTime) {
-                mergedData.completionHistory[today] = localData.completionHistory[today];
-                mergedData.lastUpdateTime = localTodayTime;
-            }
-        }
-        
-        // 合并任务计时数据
-        if (localData.taskTimes) {
-            mergedData.taskTimes = { ...mergedData.taskTimes, ...localData.taskTimes };
-        }
-        
-        return mergedData;
+        };
     }
 
     // 初始化用户界面
@@ -210,33 +128,30 @@ class TaskManager {
         }
     }
 
-    // 加载数据
-    loadData() {
-        try {
-            const data = localStorage.getItem('taskManagerData');
-            return data ? JSON.parse(data) : null;
-        } catch (error) {
-            console.error('加载数据失败:', error);
-            return null;
-        }
+    // 获取用户数据
+    getUserData() {
+        return this.serverData?.users?.xiaojiu || {};
     }
 
-    // 保存数据
-    saveData(data) {
-        try {
-            data.lastUpdateTime = Date.now();
-            data.version = this.version;
-            localStorage.setItem('taskManagerData', JSON.stringify(data));
-            console.log('数据已保存');
-            
-            // 立即同步到服务器
-            this.syncDataWithServer();
-            
-            return true;
-        } catch (error) {
-            console.error('保存数据失败:', error);
-            return false;
+    // 获取今日完成状态
+    getTodayCompletion() {
+        const today = new Date().toISOString().split('T')[0];
+        const userData = this.getUserData();
+        const dailyData = userData.dailyCompletion?.[today];
+        
+        if (!dailyData) {
+            const taskCount = userData.tasks?.length || 8;
+            return new Array(taskCount).fill(false);
         }
+        
+        return dailyData.completion || [];
+    }
+
+    // 获取任务计时数据
+    getTaskTiming(taskIndex) {
+        const today = new Date().toISOString().split('T')[0];
+        const userData = this.getUserData();
+        return userData.taskTiming?.[today]?.[taskIndex] || 0;
     }
 
     // 更新当前日期显示
@@ -252,8 +167,6 @@ class TaskManager {
             };
             dateElement.textContent = today.toLocaleDateString('zh-CN', options);
             console.log('日期已更新');
-        } else {
-            console.warn('找不到日期元素 #current-date');
         }
     }
 
@@ -265,37 +178,31 @@ class TaskManager {
             return;
         }
 
-        const data = this.loadData();
-        if (!data || !data.tasks) {
-            console.error('没有任务数据');
-            return;
-        }
-
-        const today = new Date().toISOString().split('T')[0];
-        const todayCompletion = data.completionHistory[today] || [];
+        const userData = this.getUserData();
+        const tasks = userData.tasks || [];
+        const todayCompletion = this.getTodayCompletion();
 
         // 清空现有内容
         tasksGrid.innerHTML = '';
 
         // 创建任务卡片
-        data.tasks.forEach((task, index) => {
+        tasks.forEach((task, index) => {
             const isCompleted = todayCompletion[index] || false;
-            const taskCard = this.createTaskCard(task, index, isCompleted, data.taskTimes);
+            const taskCard = this.createTaskCard(task, index, isCompleted);
             tasksGrid.appendChild(taskCard);
         });
 
-        console.log(`已渲染 ${data.tasks.length} 个任务`);
+        console.log(`已渲染 ${tasks.length} 个任务`);
     }
 
     // 创建任务卡片
-    createTaskCard(taskName, index, isCompleted, taskTimes) {
+    createTaskCard(taskName, index, isCompleted) {
         const card = document.createElement('div');
         card.className = `task-card ${isCompleted ? 'completed' : ''}`;
         card.setAttribute('data-task-index', index);
         
         // 获取任务累计时间
-        const taskKey = `${taskName}_${index}`;
-        const totalTime = taskTimes[taskKey] || 0;
+        const totalTime = this.getTaskTiming(index);
         const timeDisplay = this.formatTime(totalTime);
         
         card.innerHTML = `
@@ -335,25 +242,106 @@ class TaskManager {
         }
     }
 
-    // 开始任务计时
-    startTask(index) {
-        const data = this.loadData();
-        if (!data) return;
+    // 切换任务状态
+    async toggleTask(index) {
+        console.log(`切换任务 ${index} 状态`);
+        
+        try {
+            const currentCompletion = this.getTodayCompletion();
+            const newStatus = !currentCompletion[index];
+            
+            // 乐观更新UI
+            this.updateTaskUIOptimistically(index, newStatus);
+            
+            // 如果任务正在计时，先停止计时
+            if (this.taskTimers[index]) {
+                await this.stopTask(index);
+            }
+            
+            // 发送更新到服务器
+            const response = await this.sendToServer({
+                action: 'updateTask',
+                taskIndex: index,
+                completed: newStatus,
+                clientId: this.clientId,
+                userId: 'xiaojiu',
+                timestamp: Date.now()
+            });
+            
+            if (response.success) {
+                // 用服务器数据更新本地
+                this.serverData = response.data;
+                this.renderTasks();
+                this.updateProgress();
+                
+                // 如果完成了任务，显示庆祝动画
+                if (newStatus) {
+                    this.showCelebration();
+                }
+                
+                console.log('任务状态更新成功');
+            } else {
+                // 失败时回滚UI
+                this.updateTaskUIOptimistically(index, !newStatus);
+                alert('更新失败：' + response.message);
+            }
+            
+        } catch (error) {
+            console.error('切换任务状态时出错:', error);
+            // 回滚UI更新
+            const currentCompletion = this.getTodayCompletion();
+            this.updateTaskUIOptimistically(index, currentCompletion[index]);
+            alert('网络错误，请稍后重试');
+        }
+    }
 
-        const taskName = data.tasks[index];
-        const taskKey = `${taskName}_${index}`;
+    // 乐观更新UI
+    updateTaskUIOptimistically(index, completed) {
+        const card = document.querySelector(`[data-task-index="${index}"]`);
+        if (card) {
+            if (completed) {
+                card.classList.add('completed');
+                card.querySelector('.task-icon').textContent = '✅';
+                card.querySelector('.complete-btn').textContent = '取消完成';
+                card.querySelector('.start-btn').style.display = 'none';
+            } else {
+                card.classList.remove('completed');
+                card.querySelector('.task-icon').textContent = '⭕';
+                card.querySelector('.complete-btn').textContent = '完成任务';
+                card.querySelector('.start-btn').style.display = 'inline-block';
+            }
+        }
+    }
+
+    // 开始任务计时
+    async startTask(index) {
+        const userData = this.getUserData();
+        const taskName = userData.tasks[index];
         
         console.log(`开始任务计时: ${taskName}`);
         
         // 如果已经在计时，先停止
-        if (this.taskTimers[taskKey]) {
-            this.stopTask(index);
+        if (this.taskTimers[index]) {
+            await this.stopTask(index);
             return;
         }
         
-        // 开始计时
+        // 通知服务器开始计时
+        try {
+            await this.sendToServer({
+                action: 'startTimer',
+                taskIndex: index,
+                clientId: this.clientId,
+                userId: 'xiaojiu',
+                timestamp: Date.now()
+            });
+        } catch (error) {
+            console.warn('通知服务器开始计时失败:', error);
+        }
+        
+        // 开始本地计时
         const startTime = Date.now();
-        this.taskTimers[taskKey] = {
+        this.taskTimers[index] = {
             startTime: startTime,
             interval: setInterval(() => {
                 const elapsed = Math.floor((Date.now() - startTime) / 1000);
@@ -373,28 +361,38 @@ class TaskManager {
     }
 
     // 停止任务计时
-    stopTask(index) {
-        const data = this.loadData();
-        if (!data) return;
-
-        const taskName = data.tasks[index];
-        const taskKey = `${taskName}_${index}`;
+    async stopTask(index) {
+        if (!this.taskTimers[index]) return;
         
-        if (!this.taskTimers[taskKey]) return;
+        const userData = this.getUserData();
+        const taskName = userData.tasks[index];
         
         console.log(`停止任务计时: ${taskName}`);
         
         // 计算用时
-        const elapsed = Math.floor((Date.now() - this.taskTimers[taskKey].startTime) / 1000);
+        const elapsed = Math.floor((Date.now() - this.taskTimers[index].startTime) / 1000);
         
         // 清除定时器
-        clearInterval(this.taskTimers[taskKey].interval);
-        delete this.taskTimers[taskKey];
+        clearInterval(this.taskTimers[index].interval);
+        delete this.taskTimers[index];
         
-        // 保存累计时间
-        if (!data.taskTimes) data.taskTimes = {};
-        data.taskTimes[taskKey] = (data.taskTimes[taskKey] || 0) + elapsed;
-        this.saveData(data);
+        // 发送计时数据到服务器
+        try {
+            const response = await this.sendToServer({
+                action: 'stopTimer',
+                taskIndex: index,
+                elapsedTime: elapsed,
+                clientId: this.clientId,
+                userId: 'xiaojiu',
+                timestamp: Date.now()
+            });
+            
+            if (response.success) {
+                this.serverData = response.data;
+            }
+        } catch (error) {
+            console.error('保存计时数据失败:', error);
+        }
         
         // 更新按钮状态
         const card = document.querySelector(`[data-task-index="${index}"]`);
@@ -406,7 +404,7 @@ class TaskManager {
             }
         }
         
-        // 重新渲染任务卡片以显示更新的时间
+        // 重新渲染任务卡片
         this.renderTasks();
     }
 
@@ -416,71 +414,35 @@ class TaskManager {
         if (card) {
             const timeInfo = card.querySelector('.task-time-info');
             if (timeInfo) {
-                const data = this.loadData();
-                const taskName = data.tasks[index];
-                const taskKey = `${taskName}_${index}`;
-                const totalTime = (data.taskTimes[taskKey] || 0) + currentElapsed;
+                const totalTime = this.getTaskTiming(index) + currentElapsed;
                 timeInfo.textContent = `累计用时：${this.formatTime(totalTime)} (计时中...)`;
             }
         }
     }
 
-    // 切换任务状态
-    toggleTask(index) {
-        console.log(`切换任务 ${index} 状态`);
-        
-        try {
-            const data = this.loadData();
-            if (!data) {
-                console.error('无法加载数据');
-                return;
-            }
+    // 发送请求到服务器
+    async sendToServer(data) {
+        const response = await fetch('api/serial-update.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
 
-            const today = new Date().toISOString().split('T')[0];
-            
-            // 确保今日完成状态存在
-            if (!data.completionHistory[today]) {
-                data.completionHistory[today] = new Array(data.tasks.length).fill(false);
-            }
-
-            // 如果任务正在计时，先停止计时
-            const taskName = data.tasks[index];
-            const taskKey = `${taskName}_${index}`;
-            if (this.taskTimers[taskKey]) {
-                this.stopTask(index);
-            }
-
-            // 切换状态
-            data.completionHistory[today][index] = !data.completionHistory[today][index];
-            
-            // 保存数据
-            if (this.saveData(data)) {
-                // 重新渲染
-                this.renderTasks();
-                this.updateProgress();
-                
-                // 如果完成了任务，显示庆祝动画
-                if (data.completionHistory[today][index]) {
-                    this.showCelebration();
-                }
-            }
-            
-        } catch (error) {
-            console.error('切换任务状态时出错:', error);
+        if (!response.ok) {
+            throw new Error(`HTTP错误: ${response.status}`);
         }
+
+        return await response.json();
     }
 
     // 更新进度显示
     updateProgress() {
         try {
-            const data = this.loadData();
-            if (!data) return;
-
-            const today = new Date().toISOString().split('T')[0];
-            const todayCompletion = data.completionHistory[today] || [];
-            
+            const todayCompletion = this.getTodayCompletion();
             const completed = todayCompletion.filter(Boolean).length;
-            const total = data.tasks.length;
+            const total = todayCompletion.length;
             const percentage = total > 0 ? (completed / total) * 100 : 0;
 
             // 更新进度条
@@ -531,35 +493,23 @@ class TaskManager {
     }
 
     // 重置今日任务
-    resetTodayTasks() {
+    async resetTodayTasks() {
         console.log('重置今日任务');
         
         if (confirm('确定要重置今天的所有任务吗？这将清除所有完成状态和计时记录。')) {
             try {
                 // 停止所有正在进行的计时
-                Object.keys(this.taskTimers).forEach(taskKey => {
-                    const index = parseInt(taskKey.split('_').pop());
-                    this.stopTask(index);
+                Object.keys(this.taskTimers).forEach(async (index) => {
+                    await this.stopTask(parseInt(index));
                 });
                 
-                const data = this.loadData();
-                if (data) {
-                    const today = new Date().toISOString().split('T')[0];
-                    data.completionHistory[today] = new Array(data.tasks.length).fill(false);
-                    
-                    // 清除今日的计时记录
-                    Object.keys(data.taskTimes).forEach(key => {
-                        if (key.includes('_')) {
-                            delete data.taskTimes[key];
-                        }
-                    });
-                    
-                    if (this.saveData(data)) {
-                        this.renderTasks();
-                        this.updateProgress();
-                        alert('今日任务已重置！');
-                    }
-                }
+                // 这里可以添加重置服务器数据的逻辑
+                // 暂时通过重新加载数据来实现
+                await this.initializeData();
+                this.renderTasks();
+                this.updateProgress();
+                
+                alert('今日任务已重置！');
             } catch (error) {
                 console.error('重置任务时出错:', error);
                 alert('重置失败，请稍后再试');
@@ -571,7 +521,6 @@ class TaskManager {
     bindGlobalFunctions() {
         console.log('绑定全局函数...');
         
-        // 确保全局函数存在
         window.toggleTaskGlobal = (index) => {
             if (taskManagerInstance) {
                 taskManagerInstance.toggleTask(index);
@@ -615,14 +564,9 @@ class TaskManager {
 
     // 销毁方法
     destroy() {
-        // 清除同步定时器
-        if (this.syncInterval) {
-            clearInterval(this.syncInterval);
-        }
-        
         // 停止所有任务计时
-        Object.keys(this.taskTimers).forEach(taskKey => {
-            clearInterval(this.taskTimers[taskKey].interval);
+        Object.keys(this.taskTimers).forEach(index => {
+            clearInterval(this.taskTimers[index].interval);
         });
         
         console.log('TaskManager已销毁');
@@ -639,9 +583,9 @@ window.taskManager = taskManagerInstance;
 // 调试信息
 window.debugTaskManager = () => {
     console.log('TaskManager实例:', taskManagerInstance);
-    console.log('数据:', taskManagerInstance.loadData());
+    console.log('服务器数据:', taskManagerInstance.serverData);
     console.log('版本:', taskManagerInstance.version);
     console.log('计时器:', taskManagerInstance.taskTimers);
 };
 
-console.log('任务管理系统 v4.3.6.3 加载完成');
+console.log('任务管理系统 v4.4.1 加载完成');

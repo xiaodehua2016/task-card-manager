@@ -1,0 +1,48 @@
+[10:09:26.96] 开始Git发布流程... 
+版本: 4.4.1 
+时间戳: 20250804-100926 
+[10:09:26.98] 检查Git状态... 
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   README.md
+	deleted:    access-detector.html
+	deleted:    js/file-storage.js
+	deleted:    js/import-export.js
+	deleted:    js/main-file-only.js
+	modified:   js/main.js
+	deleted:    js/simple-storage.js
+	deleted:    js/storage-adapter.js
+	deleted:    js/storage.js
+	deleted:    js/supabase-config.js
+	deleted:    js/sync-diagnostic.js
+	deleted:    js/sync-enhancer.js
+	deleted:    js/sync-test.js
+	deleted:    js/unified-storage.js
+	modified:   package.json
+	deleted:    task-manager-v!VERSION!.zip
+	deleted:    task-manager-v4.2.2.1-complete.zip
+	deleted:    task-manager-v4.2.2.2-complete.zip
+	deleted:    task-manager-v4.2.3-complete.zip
+	deleted:    task-manager-v4.2.4-complete.zip
+	deleted:    task-manager-v4.2.5-20250803-203726.zip
+	deleted:    task-manager-v4.2.5-fix.zip
+	deleted:    task-manager-v4.2.5-test.zip
+	deleted:    "\346\225\264\347\220\206\346\226\207\344\273\266.bat"
+	deleted:    "\346\225\264\347\220\206\351\241\271\347\233\256.ps1"
+	deleted:    "\346\225\264\347\220\206\351\241\271\347\233\256\346\226\207\344\273\266.bat"
+	deleted:    "\346\225\264\347\220\206\351\241\271\347\233\256\346\226\207\344\273\266.ps1"
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	api/serial-update.php
+	deploy/deploy-v4.4.1.bat
+	deploy/git-publish-log-20250804-100926.txt
+	deploy/git-publish-v4.4.1.bat
+	deploy/server-deploy-v4.4.1.bat
+
+no changes added to commit (use "git add" and/or "git commit -a")
+[10:09:27.59] 添加文件到Git... 
