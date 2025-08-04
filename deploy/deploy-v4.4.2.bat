@@ -1,11 +1,11 @@
 @echo off
 chcp 65001 >nul
 echo ========================================
-echo 任务管理系统 v4.4.1 部署脚本
+echo 任务管理系统 v4.4.2 部署脚本
 echo ========================================
 echo.
 
-set VERSION=4.4.1
+set VERSION=4.4.2
 set TIMESTAMP=%date:~0,4%%date:~5,2%%date:~8,2%-%time:~0,2%%time:~3,2%%time:~6,2%
 set TIMESTAMP=%TIMESTAMP: =0%
 set DEPLOY_DIR=task-manager-v%VERSION%
@@ -78,6 +78,7 @@ echo [%time%] 创建版本信息... >> %LOG_FILE%
 echo 任务管理系统 v%VERSION% > %DEPLOY_DIR%\VERSION.txt
 echo 构建时间: %TIMESTAMP% >> %DEPLOY_DIR%\VERSION.txt
 echo 构建类型: 生产版本 >> %DEPLOY_DIR%\VERSION.txt
+echo 修复内容: 跨浏览器兼容性问题 >> %DEPLOY_DIR%\VERSION.txt
 
 :: 创建ZIP压缩包
 echo [%time%] 创建压缩包...

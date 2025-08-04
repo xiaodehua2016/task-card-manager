@@ -9,7 +9,7 @@ let taskManagerInstance = null;
 // 任务管理器类
 class TaskManager {
     constructor() {
-        this.version = '4.4.1';
+        this.version = '4.4.2';
         this.isInitialized = false;
         this.taskTimers = {}; // 任务计时器
         this.clientId = this.generateClientId();
@@ -75,8 +75,11 @@ class TaskManager {
 
     // 创建默认数据
     createDefaultData() {
+        const today = new Date().toISOString().split('T')[0];
         this.serverData = {
             version: this.version,
+            lastUpdateTime: Date.now(),
+            updateSequence: 0,
             users: {
                 xiaojiu: {
                     username: '小久',
@@ -90,12 +93,21 @@ class TaskManager {
                         '暑假生活作业',
                         '体育/运动（迪卡侬）'
                     ],
-                    dailyCompletion: {},
-                    taskTiming: {},
+                    dailyCompletion: {
+                        [today]: {
+                            completion: [false, false, false, false, false, false, false, false],
+                            updateTime: Date.now(),
+                            updateClient: 'client_init'
+                        }
+                    },
+                    taskTiming: {
+                        [today]: {}
+                    },
                     focusRecords: []
                 }
             }
         };
+        console.log('创建默认数据:', this.serverData);
     }
 
     // 初始化用户界面

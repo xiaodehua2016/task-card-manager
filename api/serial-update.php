@@ -109,9 +109,10 @@ function loadServerData() {
     global $dataFile;
     
     if (!file_exists($dataFile)) {
-        // 创建默认数据结构
+    // 创建默认数据结构
+        $today = date('Y-m-d');
         $defaultData = [
-            'version' => '4.4.1',
+            'version' => '4.4.2',
             'lastUpdateTime' => time() * 1000,
             'updateSequence' => 0,
             'users' => [
@@ -127,8 +128,16 @@ function loadServerData() {
                         '暑假生活作业',
                         '体育/运动（迪卡侬）'
                     ],
-                    'dailyCompletion' => [],
-                    'taskTiming' => [],
+                    'dailyCompletion' => [
+                        $today => [
+                            'completion' => [false, false, false, false, false, false, false, false],
+                            'updateTime' => time() * 1000,
+                            'updateClient' => 'system_init'
+                        ]
+                    ],
+                    'taskTiming' => [
+                        $today => []
+                    ],
                     'focusRecords' => []
                 ]
             ]
